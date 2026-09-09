@@ -246,11 +246,9 @@ class H3ClipPromptBuilder:
             raise ValueError(f"clip_index {clip_index} out of range 1..{len(clips)}")
         clip = clips[clip_index - 1]
         # chain: use the previous clip's last frame as this clip's first frame?
-        if clip_index == 1:
-            chain = False
-        elif chain_mode == "always":
+        if chain_mode == "always":      # e.g. clip 1 seeded with an SDXL keyframe
             chain = True
-        elif chain_mode == "never":
+        elif chain_mode == "never" or clip_index == 1:
             chain = False
         else:
             cfp = clip.get("continue_from_previous")
