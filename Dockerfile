@@ -23,7 +23,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # ── System deps (git for Manager, ffmpeg/libgl for video & image nodes) ──
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl ca-certificates ffmpeg libgl1 libglib2.0-0 \
+        git curl ca-certificates ffmpeg libgl1 libglib2.0-0 fonts-noto-cjk \
         build-essential aria2 \
     && rm -rf /var/lib/apt/lists/*
 

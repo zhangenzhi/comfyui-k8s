@@ -267,3 +267,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MiniMaxH3_PromptRewrite": "H3 Prompt Rewrite (Ollama)",
     "MiniMaxH3_ServerStatus": "H3 Server Status",
 }
+
+from .episode_nodes import (NODE_CLASS_MAPPINGS as _EP, NODE_DISPLAY_NAME_MAPPINGS as _EPN)  # noqa: E402
+NODE_CLASS_MAPPINGS.update(_EP)
+NODE_DISPLAY_NAME_MAPPINGS.update(_EPN)

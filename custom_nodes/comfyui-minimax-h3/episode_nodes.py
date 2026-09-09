@@ -1,0 +1,311 @@
+"""Episode-level nodes: LLM shot plan -> per-clip H3 prompts -> concat + subtitles."""
+import json
+import os
+import re
+import shutil
+import subprocess
+import tempfile
+
+import requests
+
+import folder_paths
+
+from . import bible
+
+CATEGORY = "MiniMax-H3 (HPC)/drama"
+PLANNER_SYSTEM_PATH = os.path.join(os.path.dirname(__file__), "drama_system_prompt.md")
+
+
+def _load_system_prompt(path=""):
+    p = path or os.environ.get("H3_DRAMA_SYSTEM_PROMPT", "") or PLANNER_SYSTEM_PATH
+    with open(p, encoding="utf-8") as f:
+        s = f.read()
+    # Only the "## 系统提示词" section is the actual system prompt.
+    m = re.search(r"## 系统提示词.*?(?=\n## 与 v1|\Z)", s, re.S)
+    return (m.group(0) if m else s).strip()
+
+
+def _extract_json(text):
+    tag = text.find("【分镜计划JSON】")
+    body = text[tag + len("【分镜计划JSON】"):] if tag >= 0 else text
+    body = body.strip().strip("`")
+    if body.lower().startswith("json"):
+        body = body[4:]
+    a, b = body.find("{"), body.rfind("}")
+    if a < 0 or b < 0:
+        raise ValueError("no JSON object found in LLM output")
+    return json.loads(body[a:b + 1])
+
+
+def _fmt_ts(sec):
+    m = int(sec // 60)
+    s = sec - m * 60
+    return f"{m:02d}:{s:06.3f}"
+
+
+def _srt_ts(sec):
+    h = int(sec // 3600); m = int((sec % 3600) // 60); s = sec % 60
+    return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s - int(s)) * 1000)):03d}"
+
+
+# ── nodes ──────────────────────────────────────────────────────────────
+class H3EpisodePlanner:
+    """Write one episode with the drama system prompt (v2) on Ollama and return
+    the human script + the machine shot-plan JSON."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "request": ("STRING", {"multiline": True,
+                            "default": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓。"}),
+                "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
+                "clips": ("INT", {"default": 6, "min": 3, "max": 8, "tooltip": "片段数（每段 8–15 s）"}),
+                "model": ("STRING", {"default": os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")}),
+                "temperature": ("FLOAT", {"default": 0.6, "min": 0.0, "max": 2.0, "step": 0.05}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2**31 - 1, "control_after_generate": True}),
+            },
+            "optional": {
+                "system_prompt_path": ("STRING", {"default": "", "tooltip": "留空用内置 v2；可指向 PVC 上自定义的 md"}),
+                "ollama_url": ("STRING", {"default": os.environ.get("OLLAMA_URL", "http://ollama:11434")}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING", "STRING", "STRING")
+    RETURN_NAMES = ("script_zh", "shot_plan_json", "title")
+    FUNCTION = "plan"
+    CATEGORY = CATEGORY
+    OUTPUT_NODE = True
+
+    def plan(self, request, episode, clips, model, temperature, seed,
+             system_prompt_path="", ollama_url="http://ollama:11434"):
+        system = _load_system_prompt(system_prompt_path)
+        user = (f"请写第 {episode} 集，切成 {clips} 个片段。需求：{request.strip()}\n"
+                "先输出【剧本】，再输出【分镜计划JSON】和 JSON 本体。characters 里必须包含 shen 和 gu，"
+                "外形与声音描述照抄人物圣经。")
+        r = requests.post(f"{ollama_url.rstrip('/')}/api/chat", timeout=1800, json={
+            "model": model, "stream": False,
+            "options": {"temperature": float(temperature), "num_ctx": 16384, "num_predict": 6000,
+                        "seed": int(seed)},
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        })
+        if r.status_code >= 400:
+            raise RuntimeError(f"ollama {r.status_code}: {r.text[:300]}")
+        text = r.json().get("message", {}).get("content", "")
+        try:
+            plan = _extract_json(text)
+        except Exception as e:  # noqa: BLE001
+            raise RuntimeError(f"shot plan JSON invalid ({e}). Raw output:\n{text[-1500:]}")
+        plan.setdefault("episode", episode)
+        # Force the bible in, whatever the model wrote.
+        chars = plan.setdefault("characters", {})
+        for cid, c in bible.CHARACTERS.items():
+            chars.setdefault(cid, {}).update(c)
+        plan.setdefault("style_en", bible.STYLE_EN)
+        plan.setdefault("aspect_ratio", "9:16")
+        script = text[:text.find("【分镜计划JSON】")].strip() if "【分镜计划JSON】" in text else text
+        pj = json.dumps(plan, ensure_ascii=False, indent=1)
+        return {"ui": {"text": [script[:4000]]}, "result": (script, pj, plan.get("title", ""))}
+
+
+class H3ClipPromptBuilder:
+    """Deterministically turn clip N of a shot plan into an H3 prompt.
+    Also emits the clip duration, an SRT of the Chinese dialogue, and the count."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "shot_plan_json": ("STRING", {"multiline": True, "default": ""}),
+                "clip_index": ("INT", {"default": 1, "min": 1, "max": 64}),
+                "task": (["t2va", "fl2va"], {"default": "t2va",
+                         "tooltip": "fl2va 时自动加首行对齐说明（Picture 1 = 首帧）"}),
+                "last_frame_given": ("BOOLEAN", {"default": False,
+                                     "tooltip": "fl2va 且同时提供末帧图时勾选"}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING", "FLOAT", "STRING", "INT", "STRING")
+    RETURN_NAMES = ("h3_prompt", "duration_seconds", "subtitles_srt", "clip_count", "aspect_ratio")
+    FUNCTION = "build"
+    CATEGORY = CATEGORY
+
+    def build(self, shot_plan_json, clip_index, task, last_frame_given):
+        plan = json.loads(shot_plan_json)
+        clips = plan["clips"]
+        if not 1 <= clip_index <= len(clips):
+            raise ValueError(f"clip_index {clip_index} out of range 1..{len(clips)}")
+        clip = clips[clip_index - 1]
+        chars = {**bible.CHARACTERS, **plan.get("characters", {})}
+        style = plan.get("style_en", bible.STYLE_EN)
+        duration = float(clip.get("duration", 10))
+        shots = clip.get("shots", [])
+        if not shots:
+            raise ValueError(f"clip {clip_index} has no shots")
+
+        introduced = set()
+        parts, srt, srt_i = [], [], 1
+        for n, sh in enumerate(shots, 1):
+            start = float(sh.get("start", 0.0))
+            nxt = float(shots[n]["start"]) if n < len(shots) else duration
+            span = max(1.0, nxt - start)
+            seg = []
+            if n == 1:
+                seg.append(f"[Shot 1] {style}, a {sh.get('shot_type', 'medium shot')} frames "
+                           f"{clip.get('location_en', 'the scene')}.")
+            else:
+                seg.append(f"[Shot {n}] At {_fmt_ts(start)}, the camera cuts to a "
+                           f"{sh.get('shot_type', 'medium shot')}.")
+            # character introductions (fixed sentences, once per clip)
+            for cid in sh.get("characters", []):
+                c = chars.get(cid)
+                if c and cid not in introduced:
+                    seg.append(f"{c.get('appearance_en', cid)} is in frame.")
+                    introduced.add(cid)
+            if sh.get("action_en"):
+                seg.append(sh["action_en"].strip().rstrip(".") + ".")
+            for d in sh.get("dialogue", []) or []:
+                c = chars.get(d.get("speaker", ""), {})
+                sid = c.get("speaker", "S9")
+                who = f"the {'woman' if d.get('speaker') == 'shen' else 'man'} with {c.get('voice_en', 'a steady voice')} ({sid})"
+                text = d.get("text_zh", "").strip()
+                if not text:
+                    continue
+                lang = d.get("lang", bible.DIALOGUE_LANG)
+                if d.get("mode") == "voiceover":
+                    seg.append(f"{who} says in an off-screen voiceover: <d>[{lang}] {text}</d> "
+                               f"while the visible character's lips remain completely closed.")
+                else:
+                    seg.append(f"{who} says: <d>[{lang}] {text}</d>")
+                dur = min(span, max(1.0, len(text) / bible.CHARS_PER_SECOND))
+                srt.append(f"{srt_i}\n{_srt_ts(start)} --> {_srt_ts(start + dur)}\n{text}\n")
+                srt_i += 1
+            if sh.get("sfx_en"):
+                seg.append(sh["sfx_en"].strip().rstrip(".") + " is audible.")
+            if sh.get("camera_en"):
+                cam = sh["camera_en"].strip().rstrip(".")
+                seg.append(f"The camera {cam}." if not cam.lower().startswith("the camera") else cam + ".")
+            parts.append(" ".join(seg))
+
+        body = ("integrated_multimodal_description: " + " ".join(parts) + "\n\n"
+                f"overall_soundscape: {clip.get('soundscape_en', 'Low room tone.')}\n\n"
+                f"non_diegetic_music: {clip.get('music_en', 'Sparse piano notes at a slow tempo.')}")
+        if task == "fl2va":
+            head = ("How the reference pictures align with the target video — Picture 1 (from Shot 1) "
+                    "aligns with the 0.00-second mark of the target video")
+            if last_frame_given:
+                head += (f"; Picture 2 (from Shot {len(shots)}) aligns with the "
+                         f"{duration:.2f}-second mark of the target video")
+            body = head + ".\n\n" + body
+        return (body, duration, "\n".join(srt), len(clips), plan.get("aspect_ratio", "9:16"))
+
+
+class H3VideoConcat:
+    """Concatenate up to 8 clips (paths from 'MiniMax-H3 Generate'), optionally
+    burn Chinese subtitles (SRT per clip, times are clip-relative) with ffmpeg."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        opt = {}
+        for i in range(1, 9):
+            opt[f"clip_{i}"] = ("STRING", {"default": "", "forceInput": True})
+            opt[f"srt_{i}"] = ("STRING", {"default": "", "forceInput": True})
+        opt["font_file"] = ("STRING", {"default": os.environ.get(
+            "H3_SUBTITLE_FONT", "/workspace/data/fonts/NotoSansCJK-Regular.ttc")})
+        return {"required": {
+                    "filename_prefix": ("STRING", {"default": "h3/episode"}),
+                    "burn_subtitles": ("BOOLEAN", {"default": True}),
+                    "font_size": ("INT", {"default": 18, "min": 8, "max": 72}),
+                    "crossfade_s": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.1,
+                                    "tooltip": "0 = hard cut (recommended for drama pacing)"}),
+                },
+                "optional": opt}
+
+    RETURN_TYPES = ("VIDEO", "STRING")
+    RETURN_NAMES = ("video", "video_path")
+    FUNCTION = "concat"
+    CATEGORY = CATEGORY
+    OUTPUT_NODE = True
+
+    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, font_file="", **kw):
+        clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 9)]
+        clips = [(p, s) for p, s in clips if p]
+        if not clips:
+            raise ValueError("connect at least one clip path")
+        for p, _ in clips:
+            if not os.path.exists(p):
+                raise FileNotFoundError(p)
+        work = tempfile.mkdtemp(prefix="h3concat_")
+        try:
+            normed = []
+            for i, (p, srt) in enumerate(clips, 1):
+                out = os.path.join(work, f"c{i}.mp4")
+                vf = "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=24"
+                if burn_subtitles and srt.strip():
+                    sp = os.path.join(work, f"c{i}.srt")
+                    with open(sp, "w", encoding="utf-8") as f:
+                        f.write(srt)
+                    fontsdir = os.path.dirname(font_file) if font_file and os.path.exists(font_file) else ""
+                    style = f"FontSize={font_size},Outline=1,Shadow=0,MarginV=40"
+                    if fontsdir:
+                        style = "FontName=Noto Sans CJK SC," + style
+                        vf += f",subtitles={sp}:fontsdir={fontsdir}:force_style='{style}'"
+                    else:
+                        vf += f",subtitles={sp}:force_style='{style}'"
+                cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", p, "-vf", vf,
+                       "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+                       "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", out]
+                subprocess.run(cmd, check=True)
+                normed.append(out)
+
+            full_dir, filename, counter, subfolder, _ = folder_paths.get_save_image_path(
+                filename_prefix, folder_paths.get_output_directory())
+            name = f"{filename}_{counter:05}_.mp4"
+            final = os.path.join(full_dir, name)
+            if len(normed) == 1:
+                shutil.copy(normed[0], final)
+            elif crossfade_s > 0 and len(normed) > 1:
+                # xfade/acrossfade chain
+                inputs = sum((["-i", n] for n in normed), [])
+                durs = [float(subprocess.check_output(
+                    ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", n]))
+                        for n in normed]
+                fc, off, v, a = [], 0.0, "[0:v]", "[0:a]"
+                for i in range(1, len(normed)):
+                    off += durs[i - 1] - crossfade_s
+                    fc.append(f"{v}[{i}:v]xfade=transition=fade:duration={crossfade_s}:offset={off:.3f}[v{i}]")
+                    fc.append(f"{a}[{i}:a]acrossfade=d={crossfade_s}[a{i}]")
+                    v, a = f"[v{i}]", f"[a{i}]"
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex",
+                                ";".join(fc), "-map", v, "-map", a, "-c:v", "libx264", "-crf", "18",
+                                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", final], check=True)
+            else:
+                lst = os.path.join(work, "list.txt")
+                with open(lst, "w") as f:
+                    f.writelines(f"file '{n}'\n" for n in normed)
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
+                                "-i", lst, "-c", "copy", final], check=True)
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+
+        video = None
+        try:
+            from comfy_api.latest import InputImpl
+            video = InputImpl.VideoFromFile(final)
+        except Exception:
+            pass
+        return {"ui": {"images": [{"filename": name, "subfolder": subfolder, "type": "output"}],
+                       "animated": (True,)},
+                "result": (video, final)}
+
+
+NODE_CLASS_MAPPINGS = {
+    "MiniMaxH3_EpisodePlanner": H3EpisodePlanner,
+    "MiniMaxH3_ClipPromptBuilder": H3ClipPromptBuilder,
+    "MiniMaxH3_VideoConcat": H3VideoConcat,
+}
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "MiniMaxH3_EpisodePlanner": "H3 Episode Planner (Ollama)",
+    "MiniMaxH3_ClipPromptBuilder": "H3 Clip Prompt Builder",
+    "MiniMaxH3_VideoConcat": "H3 Video Concat + Subtitles",
+}
