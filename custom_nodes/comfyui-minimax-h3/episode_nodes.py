@@ -43,6 +43,11 @@ def _fmt_ts(sec):
     return f"{m:02d}:{s:06.3f}"
 
 
+def _cap(s):
+    s = s.strip()
+    return s[:1].upper() + s[1:] if s else s
+
+
 def _srt_ts(sec):
     h = int(sec // 3600); m = int((sec % 3600) // 60); s = sec % 60
     return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s - int(s)) * 1000)):03d}"
@@ -160,14 +165,14 @@ class H3ClipPromptBuilder:
             for cid in sh.get("characters", []):
                 c = chars.get(cid)
                 if c and cid not in introduced:
-                    seg.append(f"{c.get('appearance_en', cid)} is in frame.")
+                    seg.append(_cap(f"{c.get('appearance_en', cid)} is in frame."))
                     introduced.add(cid)
             if sh.get("action_en"):
-                seg.append(sh["action_en"].strip().rstrip(".") + ".")
+                seg.append(_cap(sh["action_en"].strip().rstrip(".") + "."))
             for d in sh.get("dialogue", []) or []:
                 c = chars.get(d.get("speaker", ""), {})
                 sid = c.get("speaker", "S9")
-                who = f"the {'woman' if d.get('speaker') == 'shen' else 'man'} with {c.get('voice_en', 'a steady voice')} ({sid})"
+                who = f"The {'woman' if d.get('speaker') == 'shen' else 'man'} with {c.get('voice_en', 'a steady voice')} ({sid})"
                 text = d.get("text_zh", "").strip()
                 if not text:
                     continue
@@ -181,7 +186,7 @@ class H3ClipPromptBuilder:
                 srt.append(f"{srt_i}\n{_srt_ts(start)} --> {_srt_ts(start + dur)}\n{text}\n")
                 srt_i += 1
             if sh.get("sfx_en"):
-                seg.append(sh["sfx_en"].strip().rstrip(".") + " is audible.")
+                seg.append(_cap(sh["sfx_en"].strip().rstrip(".") + " is audible."))
             if sh.get("camera_en"):
                 cam = sh["camera_en"].strip().rstrip(".")
                 seg.append(f"The camera {cam}." if not cam.lower().startswith("the camera") else cam + ".")
