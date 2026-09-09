@@ -39,7 +39,7 @@ def _example_plan_text(max_clips=2):
         return ""
 
 
-def validate_plan(plan, min_clips=3):
+def validate_plan(plan, min_clips=6):
     """Return a list of human-readable problems (empty = OK)."""
     probs = []
     clips = plan.get("clips") or []
@@ -133,7 +133,7 @@ class H3EpisodePlanner:
                 "request": ("STRING", {"multiline": True,
                             "default": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓。"}),
                 "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
-                "clips": ("INT", {"default": 6, "min": 3, "max": 8, "tooltip": "片段数（每段 8–15 s）"}),
+                "clips": ("INT", {"default": 12, "min": 3, "max": 16, "tooltip": "片段数（每段 12–15 s；3 分钟一集 = 12 段）"}),
                 "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND,
                             "tooltip": "local = 常驻在 pod 的 H100 上（默认）；openai = HPC/云端 OpenAI 兼容接口(H3_LLM_URL)；"
                                        "ollama = 集群 CPU 服务（慢）"}),
@@ -168,7 +168,7 @@ class H3EpisodePlanner:
                 "外形与声音描述照抄人物圣经。action_en 里用 she/he 或 the woman/the man 指代，不要写名字。"
                 "每个片段必须有 2–4 个镜头，镜头 1 的 start 为 0，后续镜头 start 递增；台词按语速 4 字/秒控制长度。")
         text = llm.chat(system, user, backend=backend, model=model, temperature=temperature,
-                        seed=seed, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
+                        seed=seed, max_new_tokens=20000, ollama_url=ollama_url, openai_url=llm_url)
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001
@@ -180,7 +180,7 @@ class H3EpisodePlanner:
                         "请只输出修正后的完整 JSON（不要剧本、不要解释、不要代码围栏），内容保持不变，只修语法"
                         "（未闭合的引号/括号、多余逗号、字符串里的英文双引号要转义）：\n" + broken.strip())
             text2 = llm.chat(system, fix_user, backend=backend, model=model, temperature=0.1,
-                             seed=seed + 7, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
+                             seed=seed + 7, max_new_tokens=20000, ollama_url=ollama_url, openai_url=llm_url)
             try:
                 plan = _extract_json(text2)
             except Exception as e2:  # noqa: BLE001
@@ -192,7 +192,7 @@ class H3EpisodePlanner:
                         "\n请只输出修正后的完整 JSON（不要剧本、不要解释、不要代码围栏），保持同样的结构：\n" +
                         json.dumps(plan, ensure_ascii=False))
             text2 = llm.chat(system, fix_user, backend=backend, model=model, temperature=max(0.2, temperature - 0.2),
-                             seed=seed + 1, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
+                             seed=seed + 1, max_new_tokens=20000, ollama_url=ollama_url, openai_url=llm_url)
             try:
                 plan2 = _extract_json(text2)
                 if len(validate_plan(plan2)) < len(probs):
@@ -225,24 +225,42 @@ class H3ClipPromptBuilder:
             "required": {
                 "shot_plan_json": ("STRING", {"multiline": True, "default": ""}),
                 "clip_index": ("INT", {"default": 1, "min": 1, "max": 64}),
-                "task": (["t2va", "fl2va"], {"default": "t2va",
-                         "tooltip": "fl2va 时自动加首行对齐说明（Picture 1 = 首帧）"}),
+                "task": (["auto", "t2va", "fl2va"], {"default": "auto",
+                         "tooltip": "auto: 第 1 段 t2va，之后按 chain_mode 决定是否用上一段末帧做首帧(fl2va)"}),
+                "chain_mode": (["auto", "always", "never"], {"default": "auto",
+                               "tooltip": "auto = 按分镜 JSON 的 continue_from_previous（同一场景才延续）"}),
                 "last_frame_given": ("BOOLEAN", {"default": False,
                                      "tooltip": "fl2va 且同时提供末帧图时勾选"}),
             },
         }
 
-    RETURN_TYPES = ("STRING", "FLOAT", "STRING", "INT", "STRING")
-    RETURN_NAMES = ("h3_prompt", "duration_seconds", "subtitles_srt", "clip_count", "aspect_ratio")
+    RETURN_TYPES = ("STRING", "FLOAT", "STRING", "INT", "STRING", "BOOLEAN")
+    RETURN_NAMES = ("h3_prompt", "duration_seconds", "subtitles_srt", "clip_count", "aspect_ratio", "chain")
     FUNCTION = "build"
     CATEGORY = CATEGORY
 
-    def build(self, shot_plan_json, clip_index, task, last_frame_given):
+    def build(self, shot_plan_json, clip_index, task, chain_mode, last_frame_given):
         plan = json.loads(shot_plan_json)
         clips = plan["clips"]
         if not 1 <= clip_index <= len(clips):
             raise ValueError(f"clip_index {clip_index} out of range 1..{len(clips)}")
         clip = clips[clip_index - 1]
+        # chain: use the previous clip's last frame as this clip's first frame?
+        if clip_index == 1:
+            chain = False
+        elif chain_mode == "always":
+            chain = True
+        elif chain_mode == "never":
+            chain = False
+        else:
+            cfp = clip.get("continue_from_previous")
+            if cfp is None:   # not specified: continue when the location text did not change
+                prev = clips[clip_index - 2]
+                cfp = (clip.get("location_en", "").strip().lower()[:40] ==
+                       prev.get("location_en", "").strip().lower()[:40])
+            chain = bool(cfp)
+        if task == "auto":
+            task = "fl2va" if chain else "t2va"
         chars = {**bible.CHARACTERS, **plan.get("characters", {})}
         style = plan.get("style_en", bible.STYLE_EN)
         duration = float(clip.get("duration", 10))
@@ -312,17 +330,17 @@ class H3ClipPromptBuilder:
                 head += (f"; Picture 2 (from Shot {len(shots)}) aligns with the "
                          f"{duration:.2f}-second mark of the target video")
             body = head + ".\n\n" + body
-        return (body, duration, "\n".join(srt), len(clips), plan.get("aspect_ratio", "9:16"))
+        return (body, duration, "\n".join(srt), len(clips), plan.get("aspect_ratio", "9:16"), chain)
 
 
 class H3VideoConcat:
-    """Concatenate up to 8 clips (paths from 'MiniMax-H3 Generate'), optionally
+    """Concatenate up to 12 clips (paths from 'MiniMax-H3 Generate'), optionally
     burn Chinese subtitles (SRT per clip, times are clip-relative) with ffmpeg."""
 
     @classmethod
     def INPUT_TYPES(cls):
         opt = {}
-        for i in range(1, 9):
+        for i in range(1, 13):
             opt[f"clip_{i}"] = ("STRING", {"default": "", "forceInput": True})
             opt[f"srt_{i}"] = ("STRING", {"default": "", "forceInput": True})
         opt["font_file"] = ("STRING", {"default": os.environ.get(
@@ -344,7 +362,7 @@ class H3VideoConcat:
     OUTPUT_NODE = True
 
     def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, font_file="", **kw):
-        clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 9)]
+        clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 13)]
         clips = [(p, s) for p, s in clips if p]
         if not clips:
             raise ValueError("connect at least one clip path")
@@ -424,13 +442,47 @@ class H3VideoConcat:
                 "result": (video, final)}
 
 
+class H3LastFrame:
+    """Last (or first) frame of a clip as an IMAGE, for fl2va chaining."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"video_path": ("STRING", {"default": "", "forceInput": True}),
+                             "which": (["last", "first"], {"default": "last"})}}
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "grab"
+    CATEGORY = CATEGORY
+
+    def grab(self, video_path, which):
+        import io
+        import numpy as np
+        import torch
+        from PIL import Image
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(video_path)
+        if which == "last":
+            cmd = ["ffmpeg", "-loglevel", "error", "-sseof", "-0.2", "-i", video_path,
+                   "-update", "1", "-frames:v", "1", "-f", "image2pipe", "-vcodec", "png", "-"]
+        else:
+            cmd = ["ffmpeg", "-loglevel", "error", "-i", video_path,
+                   "-frames:v", "1", "-f", "image2pipe", "-vcodec", "png", "-"]
+        png = subprocess.run(cmd, check=True, capture_output=True).stdout
+        img = Image.open(io.BytesIO(png)).convert("RGB")
+        arr = np.asarray(img).astype(np.float32) / 255.0
+        return (torch.from_numpy(arr)[None, ...],)
+
+
 NODE_CLASS_MAPPINGS = {
+    "MiniMaxH3_LastFrame": H3LastFrame,
     "MiniMaxH3_EpisodePlanner": H3EpisodePlanner,
     "MiniMaxH3_ClipPromptBuilder": H3ClipPromptBuilder,
     "MiniMaxH3_VideoConcat": H3VideoConcat,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "MiniMaxH3_EpisodePlanner": "H3 Episode Planner (Ollama)",
+    "MiniMaxH3_LastFrame": "H3 Last Frame (for fl2va chaining)",
+    "MiniMaxH3_EpisodePlanner": "H3 Episode Planner (LLM)",
     "MiniMaxH3_ClipPromptBuilder": "H3 Clip Prompt Builder",
     "MiniMaxH3_VideoConcat": "H3 Video Concat + Subtitles",
 }

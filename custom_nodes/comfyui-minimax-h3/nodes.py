@@ -70,7 +70,8 @@ class H3Generate:
                            "tooltip": "H3 prompt (integrated_multimodal_description / "
                                       "overall_soundscape / non_diegetic_music). "
                                       "Use the 'H3 Prompt Rewrite' node to produce one."}),
-                "task": (["t2va", "fl2va", "ref2va"], {"default": "t2va"}),
+                "task": (["auto", "t2va", "fl2va", "ref2va"], {"default": "auto",
+                         "tooltip": "auto: 有首/末帧且 use_keyframes 为真 → fl2va；有参考图 → ref2va；否则 t2va"}),
                 "duration_seconds": ("FLOAT", {"default": 5.0, "min": 4.0, "max": 15.0, "step": 0.5}),
                 "aspect_ratio": (ASPECTS, {"default": "16:9"}),
                 "seed": ("INT", {"default": 1101, "min": 0, "max": 2**31 - 1,
@@ -87,6 +88,8 @@ class H3Generate:
                 "first_frame": ("IMAGE", {"tooltip": "fl2va: clip starts on this image"}),
                 "last_frame": ("IMAGE", {"tooltip": "fl2va: clip ends on this image"}),
                 "reference_image": ("IMAGE", {"tooltip": "ref2va: identity/style reference"}),
+                "use_keyframes": ("BOOLEAN", {"default": True,
+                                  "tooltip": "接 Clip Prompt Builder 的 chain 输出：为假时忽略首/末帧（新场景用 t2va）"}),
                 "endpoint": ("STRING", {"default": "",
                              "tooltip": "host:port of the SGLang server. Empty = env H3_ENDPOINT "
                                         "(or SSH discovery if the HPC key is mounted)."}),
@@ -101,10 +104,21 @@ class H3Generate:
 
     def generate(self, prompt, task, duration_seconds, aspect_ratio, seed, steps, short_edge,
                  flow_shift, audio_flow_shift, filename_prefix, timeout_s,
-                 first_frame=None, last_frame=None, reference_image=None, endpoint=""):
+                 first_frame=None, last_frame=None, reference_image=None, use_keyframes=True, endpoint=""):
         prompt = (prompt or "").strip()
         if not prompt:
             raise ValueError("prompt is empty")
+        if not use_keyframes:
+            first_frame = last_frame = None
+        if task == "auto":
+            if first_frame is not None or last_frame is not None:
+                task = "fl2va"
+            elif reference_image is not None:
+                task = "ref2va"
+            else:
+                task = "t2va"
+        if task == "t2va":
+            first_frame = last_frame = reference_image = None   # a linked-but-unused frame must not break t2va
 
         conditions = []
         if first_frame is not None:

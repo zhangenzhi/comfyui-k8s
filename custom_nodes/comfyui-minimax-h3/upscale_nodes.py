@@ -10,11 +10,11 @@ import comfy.model_management as mm
 from . import hpc_jobs as hpc
 
 CATEGORY = "MiniMax-H3 (HPC)/post"
-N = 8
+N = 12
 
 
 class H3SeedVR2Upscale:
-    """Submit up to 8 clips to the HPC in parallel (one PBS job each on queue `sg`),
+    """Submit up to 12 clips to the HPC in parallel (one PBS job each on queue `sg`),
     wait for all, and download the 2K results into ComfyUI's output folder.
     Outputs keep slot order: up_1 corresponds to clip_1, etc. (empty if unused)."""
 
