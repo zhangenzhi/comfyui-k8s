@@ -34,14 +34,30 @@ def _norm(endpoint):
     return endpoint.rstrip("/")
 
 
+_cache = {"ep": None, "t": 0.0}
+
+
+def _alive(base, timeout=3):
+    try:
+        r = requests.get(f"{base}/health", timeout=timeout)
+        return r.ok
+    except Exception:
+        return False
+
+
 def discover_endpoint_via_ssh():
-    """Read <H3_ROOT>/logs/server_endpoint.txt on the HPC over SFTP (optional).
-    Returns 'host:port' (hostname as written by the PBS job) or None."""
+    """Find the running H3 server on the HPC over SSH (needs Secret comfyui-hpc-ssh):
+    1. a running PBS job named h3_serve -> its exec_host -> IP:PORT
+    2. else <H3_ROOT>/logs/server_endpoint.txt (may be stale after a walltime kill)
+    Returns 'ip:port' or None."""
     key = os.environ.get("HPC_KEY_PATH", "")
+    if not os.path.exists(key):
+        key = "/workspace/data/.ssh/key"
     host = os.environ.get("HPC_HOST", "")
     user = os.environ.get("HPC_USER", "")
     root = os.environ.get("H3_ROOT", "")
-    if not (key and os.path.exists(key) and host and user and root):
+    port = os.environ.get("H3_PORT", "30010")
+    if not (os.path.exists(key) and host and user and root):
         return None
     try:
         import paramiko
@@ -52,12 +68,13 @@ def discover_endpoint_via_ssh():
     client.connect(host, username=user, key_filename=key, timeout=15,
                    allow_agent=False, look_for_keys=False)
     try:
-        # Resolve the compute-node hostname to an IP on the login node; the pod
-        # cannot resolve HPC hostnames itself.
-        _, out, _ = client.exec_command(
-            f"ep=$(cat {root}/logs/server_endpoint.txt 2>/dev/null); "
-            "[ -n \"$ep\" ] && printf '%s:%s' \"$(getent hosts ${ep%%:*} | awk '{print $1}')\" \"${ep##*:}\"",
-            timeout=30)
+        cmd = (
+            "j=$(/opt/pbs/bin/qstat -u $USER 2>/dev/null | awk '/h3_serve/ && $10==\"R\" {print $1; exit}'); "
+            "if [ -n \"$j\" ]; then h=$(/opt/pbs/bin/qstat -f $j | tr -d '\\n\\t ' | grep -o 'exec_host=[^/]*' | cut -d= -f2); "
+            "  ip=$(getent hosts $h | awk '{print $1}'); [ -n \"$ip\" ] && printf '%s:%s' \"$ip\" \"" + port + "\"; "
+            f"else ep=$(cat {root}/logs/server_endpoint.txt 2>/dev/null); "
+            "  [ -n \"$ep\" ] && printf '%s:%s' \"$(getent hosts ${ep%%:*} | awk '{print $1}')\" \"${ep##*:}\"; fi")
+        _, out, _ = client.exec_command(cmd, timeout=30)
         ep = out.read().decode().strip()
         return ep or None
     finally:
@@ -65,10 +82,24 @@ def discover_endpoint_via_ssh():
 
 
 def resolve_endpoint(endpoint=None):
-    ep = (endpoint or "").strip() or os.environ.get("H3_ENDPOINT", "").strip()
-    if not ep:
-        ep = discover_endpoint_via_ssh() or ""
-    return _norm(ep)
+    """Explicit endpoint > env H3_ENDPOINT (if alive) > cached discovery > SSH discovery."""
+    ep = (endpoint or "").strip()
+    if ep:
+        return _norm(ep)
+    env_ep = os.environ.get("H3_ENDPOINT", "").strip()
+    if env_ep and _alive(_norm(env_ep)):
+        return _norm(env_ep)
+    if _cache["ep"] and time.time() - _cache["t"] < 120 and _alive(_norm(_cache["ep"])):
+        return _norm(_cache["ep"])
+    found = discover_endpoint_via_ssh()
+    if found:
+        _cache.update(ep=found, t=time.time())
+        print(f"[MiniMax-H3] endpoint discovered via HPC: {found}")
+        return _norm(found)
+    if env_ep:
+        raise H3Error(f"H3 server at {env_ep} is not responding and no running h3_serve job was found on the HPC. "
+                      "Start it with: qsub scripts/serve_h3.pbs (in minimax-h3)")
+    return _norm("")
 
 
 def health(endpoint=None, timeout=10):
