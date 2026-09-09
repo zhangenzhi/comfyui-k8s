@@ -157,7 +157,35 @@ kubectl -n c30636-default rollout restart deploy/comfyui
 参数默认值来自 `scripts/t2va_request.sh`：768p short edge、50 步、flow_shift 12、audio_flow_shift 3，时长 4–15 s。
 一集短剧要拆成多段 ≤15 s 生成再拼接。
 
-## 7. 排错
+## 7. 短剧管线：剧本 → 分镜 JSON → 逐段 H3 → 拼接
+
+System Prompt v2（机器可读分镜版）在 `custom_nodes/comfyui-minimax-h3/drama_system_prompt.md`，
+原稿也存于 `minimax-h3/prompts/templates/douyin_drama_system_prompt_v2.md`。人物圣经在 `bible.py`。
+
+| 节点（分类 MiniMax-H3 (HPC)/drama） | 作用 |
+|---|---|
+| **H3 Episode Planner** | 用 v2 提示词写一集：输出中文剧本 + 分镜计划 JSON（5–7 段 ≤15 s，每镜头带秒数/镜头语言/台词/说话人）。`backend=local` 用 pod 自己的 H100 跑 `Qwen2.5-14B-Instruct`（推荐），`ollama` 走集群 CPU 服务（慢） |
+| **H3 Clip Prompt Builder** | 确定性地把第 N 段转成 H3 三段式英文提示词（自动插入固定外形/声线、S1/S2、画外音闭嘴规则、时间戳），并输出该段的中文 SRT |
+| **H3 Video Concat + Subtitles** | ffmpeg 归一化、烧中文字幕（Noto Sans CJK）、硬切或交叉淡化拼接成整集 |
+
+推荐工作流（一集 5 段）：
+
+```
+Episode Planner ─ shot_plan_json ─┬─ Clip Prompt Builder(1) ─ h3_prompt/duration ─ MiniMax-H3 Generate(t2va) ─ video_path ─┐
+                                  ├─ Clip Prompt Builder(2, fl2va) ← first_frame = 上一段末帧(GetVideoComponents→ImageFromBatch) ─ Generate(fl2va) ┤
+                                  ├─ …                                                                                                        ├─ Video Concat + Subtitles
+                                  └─ Clip Prompt Builder(5) ……                                                                                ┘
+```
+
+- **人物一致性**：固定外形句 + 固定声线句每段重复；第 2 段起用 fl2va，把上一段最后一帧作为首帧（场景、光线、站位自然延续）；
+  需要更强的人脸一致性时，先在 pod 的 H100 上用 SDXL + IPAdapter/PuLID 出两位主角的定妆参考图，再走 `ref2va`（需先下载 `Ref2VA/` 权重并以 `VARIANT=ref2va` 起服务）。
+- **动作可控**：一镜一事；复杂肢体动作拆镜头；关键姿势用 ControlNet(OpenPose) 在 SDXL 上出关键帧，再 fl2va 强制首末帧。
+- **画质**：H3 原生 768p。后期在 pod 上：`FrameInterpolate`(RIFE) 24→48 fps、`ImageUpscaleWithModel`(4x-UltraSharp) 逐帧放大到 1080p/2K、
+  再 `CreateVideo`+`SaveVideo`；或直接在请求里开 SGLang 的 `enable_upscaling` / `enable_frame_interpolation`（服务端算，占 H100 时间）。
+- 本地 LLM 权重：`kubectl exec deploy/comfyui -- fetch-llm Qwen/Qwen2.5-14B-Instruct`（约 30 GB，进 PVC `/workspace/data/llm/`）。
+  字幕字体：`/workspace/data/fonts/NotoSansCJK-Regular.ttc`（镜像内也装了 fonts-noto-cjk）。
+
+## 8. 排错
 
 | 现象 | 处理 |
 |---|---|
