@@ -66,7 +66,7 @@ def validate_plan(plan, min_clips=3):
             for dlg in sh.get("dialogue") or []:
                 t = dlg.get("text_zh", "")
                 nxt = float(shots[n]["start"]) if n < len(shots) else d
-                if len(t) > max(4, (nxt - st) * bible.CHARS_PER_SECOND + 2):
+                if len(t) > max(6, (nxt - st) * bible.CHARS_PER_SECOND * 1.3 + 2):   # ~25% tolerance
                     probs.append(f"片段 {i} 镜头 {n} 台词太长（{len(t)} 字，镜头只有 {nxt - st:.1f} s）")
         total = sum(len(dl.get("text_zh", "")) for sh in shots for dl in (sh.get("dialogue") or []))
         if total > 45:
