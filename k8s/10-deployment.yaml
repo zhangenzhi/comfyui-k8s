@@ -65,6 +65,22 @@ spec:
             # 1 = git pull ComfyUI at every start (like ffformer entrypoint). 0 = pinned image code.
             - name: COMFYUI_AUTO_UPDATE
               value: "0"
+            # ---- MiniMax-H3 on the HPC (custom_nodes/comfyui-minimax-h3) ----
+            # SGLang server started by /lustre1/work/c30636/test/minimax-h3/scripts/serve_h3.pbs;
+            # the pod reaches the compute node directly. Update when the PBS job moves.
+            - name: H3_ENDPOINT
+              value: "172.31.17.244:30010"
+            - name: H3_ROOT
+              value: /lustre1/work/c30636/test/minimax-h3
+            # Optional SSH access to the HPC login node (endpoint discovery / qsub).
+            - name: HPC_HOST
+              value: 172.31.20.1
+            - name: HPC_USER
+              value: c30746
+            - name: HPC_KEY_PATH
+              value: /secrets/hpc/key
+            - name: OLLAMA_URL
+              value: http://ollama:11434
             - name: HF_TOKEN            # for fetch-model on gated HF repos (optional)
               valueFrom:
                 secretKeyRef:
@@ -76,6 +92,9 @@ spec:
               mountPath: /workspace/data
             - name: shm
               mountPath: /dev/shm
+            - name: hpc-ssh
+              mountPath: /secrets/hpc
+              readOnly: true
           resources:
             requests:
               cpu: "8"
@@ -113,6 +132,11 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 8Gi
+        - name: hpc-ssh
+          secret:
+            secretName: comfyui-hpc-ssh
+            defaultMode: 0400
+            optional: true          # create it to enable SSH features (see README)
 ---
 # In-cluster entry (ClusterIP) - used by the TLS proxy and by port-forward.
 apiVersion: v1

@@ -18,6 +18,15 @@ if [ ! -d "${BASE}/custom_nodes/ComfyUI-Manager" ]; then
     cp -r /opt/seed/ComfyUI-Manager "${BASE}/custom_nodes/"
 fi
 
+# ── Bundled custom nodes from the image: always overwrite (versioned in git)
+for d in /opt/seed/custom_nodes/*/; do
+    [ -d "$d" ] || continue
+    n=$(basename "$d")
+    rm -rf "${BASE}/custom_nodes/${n}"
+    cp -r "$d" "${BASE}/custom_nodes/${n}"
+    echo "[entrypoint] synced bundled custom node: ${n}"
+done
+
 # ── Persistent pip user site: packages installed by Manager / custom nodes
 #    survive pod restarts because they live on the PVC, not in the image.
 export PYTHONUSERBASE="${BASE}/.pyuser"

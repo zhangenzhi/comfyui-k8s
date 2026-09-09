@@ -45,6 +45,10 @@ RUN useradd -m -u 1000 -s /bin/bash comfy \
     # let custom nodes pip-install into the env when PIP_USER is not set
     && chmod -R a+rwX /opt/conda/lib/python3.*/site-packages /opt/conda/bin
 
+# ── Bundled custom nodes (synced into the PVC at every start) ───────────
+COPY --chown=comfy:comfy custom_nodes/ /opt/seed/custom_nodes/
+RUN pip install paramiko requests
+
 COPY --chown=comfy:comfy entrypoint.sh /opt/entrypoint.sh
 COPY --chown=comfy:comfy fetch-model.sh /usr/local/bin/fetch-model
 RUN chmod +x /opt/entrypoint.sh /usr/local/bin/fetch-model

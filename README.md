@@ -8,6 +8,7 @@ comfyui-k8s/
 ├── Dockerfile                 # pytorch cu124 底座 + ComfyUI + ComfyUI-Manager，非 root (UID 1000)
 ├── entrypoint.sh              # 初始化 PVC 目录、注入 Manager、启动 ComfyUI --base-directory
 ├── fetch-model.sh             # 镜像内小工具：fetch-model <subdir> <url>
+├── custom_nodes/comfyui-minimax-h3/  # H3 节点（见 §6）
 ├── docker-compose.yml         # 本机 GPU 冒烟测试
 ├── .github/workflows/         # push main -> 自动 build & push 到 Docker Hub
 └── k8s/
@@ -124,7 +125,39 @@ kubectl -n $NS create secret generic comfyui-hf-token --from-literal=token=hf_xx
   然后 `kubectl -n $NS rollout restart deploy/comfyui`。
 - **改启动参数**：改 `COMFYUI_ARGS`（如 `--highvram`、`--fp8_e4m3fn-unet`、`--fast`）后 rollout restart。
 
-## 6. 排错
+## 6. MiniMax-H3：ComfyUI 接任务，超算生成
+
+`custom_nodes/comfyui-minimax-h3/`（随镜像打包，每次启动同步到 PVC）提供三个节点，分类 **MiniMax-H3 (HPC)**：
+
+| 节点 | 作用 |
+|---|---|
+| **MiniMax-H3 Generate (HPC)** | 把 prompt（+ 可选首/末帧、参考图）提交给超算上的 SGLang `/v1/videos`，轮询进度，把 mp4 存到 `output/h3/`，输出 VIDEO |
+| **H3 Prompt Rewrite (Ollama)** | 用集群里的 `ollama`（qwen2.5:7b-instruct）把任意语言的一句话想法改写成 H3 官方三段式提示词（替代未开源的 H3-Context-IR） |
+| **H3 Server Status** | 探测服务健康和当前任务数 |
+
+链路：`浏览器 → ComfyUI pod → HTTP 直连 sgpu0xx:30010（SGLang，4×H100）→ mp4 拉回 pod 的 output/`。
+pod 能直接访问计算节点端口，所以生成主链路**不经过 SSH**；图片以 `data:image/png;base64` 内嵌在请求里。
+
+**服务端**：`/lustre1/work/c30636/test/minimax-h3`，`qsub scripts/serve_h3.pbs` 起服务（12h walltime），
+端点写在 `logs/server_endpoint.txt`（主机名）。pod 解析不了 HPC 主机名，Deployment 里的 `H3_ENDPOINT`
+要填 **IP:端口**（`getent hosts sgpu016`）。作业换了节点就改 `H3_ENDPOINT` 后 `rollout restart`，
+或者在节点的 `endpoint` 输入框里临时填。
+
+**可选 SSH 自动发现**：给 pod 一把受限的 key（`from="172.31.232.*",no-pty`，同 ffformer），
+做成 Secret `comfyui-hpc-ssh`（key 名 `key`），Deployment 已挂到 `/secrets/hpc/key`；
+`H3_ENDPOINT` 留空时节点会通过 SFTP 读 `server_endpoint.txt` 并在登录节点上解析 IP。
+
+```bash
+ssh-keygen -t ed25519 -N '' -C comfyui-k8s-pod -f ~/.ssh/comfyui_k8s_ed25519
+echo "from=\"172.31.232.*\",no-pty,no-agent-forwarding,no-X11-forwarding $(cat ~/.ssh/comfyui_k8s_ed25519.pub)" >> ~/.ssh/authorized_keys
+kubectl -n c30636-default create secret generic comfyui-hpc-ssh --from-file=key=$HOME/.ssh/comfyui_k8s_ed25519
+kubectl -n c30636-default rollout restart deploy/comfyui
+```
+
+参数默认值来自 `scripts/t2va_request.sh`：768p short edge、50 步、flow_shift 12、audio_flow_shift 3，时长 4–15 s。
+一集短剧要拆成多段 ≤15 s 生成再拼接。
+
+## 7. 排错
 
 | 现象 | 处理 |
 |---|---|
