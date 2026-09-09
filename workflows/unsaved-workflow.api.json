@@ -33,7 +33,7 @@
     ],
     "clip_index": 1,
     "task": "auto",
-    "chain_mode": "auto",
+    "chain_mode": "always",
     "last_frame_given": false
    }
   },
@@ -61,7 +61,11 @@
      "b1",
      5
     ],
-    "endpoint": ""
+    "endpoint": "",
+    "first_frame": [
+     "kf1",
+     0
+    ]
    }
   },
   "b2": {
@@ -925,6 +929,12 @@
      "b12",
      2
     ]
+   }
+  },
+  "kf1": {
+   "class_type": "LoadImage",
+   "inputs": {
+    "image": "keyframes/ep01_clip1.png"
    }
   }
  }

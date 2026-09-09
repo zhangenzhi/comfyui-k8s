@@ -196,7 +196,13 @@ Episode Planner ─ shot_plan_json ─┬─ Clip Prompt Builder(1) ─ h3_promp
 
 - **人物一致性**：固定外形句 + 固定声线句每段重复；第 2 段起用 fl2va，把上一段最后一帧作为首帧（场景、光线、站位自然延续）；
   需要更强的人脸一致性时，先在 pod 的 H100 上用 SDXL + IPAdapter/PuLID 出两位主角的定妆参考图，再走 `ref2va`（需先下载 `Ref2VA/` 权重并以 `VARIANT=ref2va` 起服务）。
-- **动作可控**：一镜一事；复杂肢体动作拆镜头；关键姿势用 ControlNet(OpenPose) 在 SDXL 上出关键帧，再 fl2va 强制首末帧。
+- **定妆与强人脸一致性（已落地）**：工作流 `character-sheet`（IPAdapter FaceID PlusV2 + SDXL，在 pod 的 H100 上跑）。
+  流程：先用 SDXL 按人物圣经出候选正脸 → 选一张作 **锚点脸** 放到 `input/characters/<id>_anchor.png` →
+  FaceID 生成正面 / 四分之三 / 侧面三视图（`output/characters/sheets/`）和第 1 段首帧关键帧（`output/keyframes/`，复制到 `input/keyframes/ep01_clip1.png`）。
+  `unsaved-workflow` 第 1 段以该关键帧为首帧（`chain_mode=always`），后续段落靠首末帧串接把人脸传下去，因此暂时不需要 144 GB 的 Ref2VA 权重。
+  模型：`models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin`、`ip-adapter-plus_sdxl_vit-h.safetensors`、`models/loras/ip-adapter-faceid-plusv2_sdxl_lora.safetensors`、
+  `models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors`，insightface `buffalo_l` 首次运行自动下载到 `models/insightface/`。
+- **动作可控**：一镜一事；复杂肢体动作拆镜头；SDXL 对"蹲下""俯身"等姿势不可靠，关键姿势用 ControlNet(OpenPose) 在 SDXL 上出关键帧，再 fl2va 强制首末帧（待接入）。
 - **画质**：H3 原生 768p。后期在 pod 上：`FrameInterpolate`(RIFE) 24→48 fps、`ImageUpscaleWithModel`(4x-UltraSharp) 逐帧放大到 1080p/2K、
   再 `CreateVideo`+`SaveVideo`；或直接在请求里开 SGLang 的 `enable_upscaling` / `enable_frame_interpolation`（服务端算，占 H100 时间）。
 - **2K 超分（SeedVR2-7B sharp，超算 `sg` 队列）**：节点 **H3 SeedVR2 Upscale 2K (HPC sg)**（分类 `MiniMax-H3 (HPC)/post`）
