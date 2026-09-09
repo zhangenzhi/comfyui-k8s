@@ -175,6 +175,7 @@ Episode Planner ─ shot_plan_json ─┬─ Clip Prompt Builder(1) ─ h3_promp
                                   ├─ Clip Prompt Builder(2, fl2va) ← first_frame = 上一段末帧(GetVideoComponents→ImageFromBatch) ─ Generate(fl2va) ┤
                                   ├─ …                                                                                                        ├─ Video Concat + Subtitles
                                   └─ Clip Prompt Builder(5) ……                                                                                ┘
+        （可选）5 段 video_path ─ H3 SeedVR2 Upscale 2K (HPC sg) ─ up_1..up_5 ─ Video Concat + Subtitles（font_size 调到 36 左右）
 ```
 
 - **人物一致性**：固定外形句 + 固定声线句每段重复；第 2 段起用 fl2va，把上一段最后一帧作为首帧（场景、光线、站位自然延续）；
@@ -182,6 +183,11 @@ Episode Planner ─ shot_plan_json ─┬─ Clip Prompt Builder(1) ─ h3_promp
 - **动作可控**：一镜一事；复杂肢体动作拆镜头；关键姿势用 ControlNet(OpenPose) 在 SDXL 上出关键帧，再 fl2va 强制首末帧。
 - **画质**：H3 原生 768p。后期在 pod 上：`FrameInterpolate`(RIFE) 24→48 fps、`ImageUpscaleWithModel`(4x-UltraSharp) 逐帧放大到 1080p/2K、
   再 `CreateVideo`+`SaveVideo`；或直接在请求里开 SGLang 的 `enable_upscaling` / `enable_frame_interpolation`（服务端算，占 H100 时间）。
+- **2K 超分（SeedVR2-7B sharp，超算 `sg` 队列）**：节点 **H3 SeedVR2 Upscale 2K (HPC sg)**（分类 `MiniMax-H3 (HPC)/post`）
+  把最多 8 段 mp4 SFTP 到 lustre `minimax-h3/deploy_jobs/comfyui/`，每段 `qsub -v IN=… scripts/upscale_seedvr2.pbs` 并行投到 `sg`，
+  轮询 `qstat -x`，完成后把 `outputs/upscaled/*_seedvr2_1440p.mp4` 拉回 `output/h3/upscaled/`，输出顺序与输入槽位一致，再接 Concat。
+  15 秒片段单卡约 7.5 分钟（0.84 fps），768×1344 → 1440×2520。这是唯一走 SSH 的节点：
+  Secret `comfyui-hpc-ssh` 用的是 `~/.ssh/ffformer_k8s_ed25519`（authorized_keys 里已限 `from="172.31.232.*",no-pty`），挂在 `/secrets/hpc/key`。
 - 本地 LLM 权重：`kubectl exec deploy/comfyui -- fetch-llm Qwen/Qwen2.5-14B-Instruct`（约 30 GB，进 PVC `/workspace/data/llm/`）。
   字幕字体：`/workspace/data/fonts/NotoSansCJK-Regular.ttc`（镜像内也装了 fonts-noto-cjk）。
 
