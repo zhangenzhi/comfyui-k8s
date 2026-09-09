@@ -63,4 +63,7 @@ jobs:
             ${{ env.IMAGE }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          no-cache: true
+          # Layer cache: unchanged layers keep their digests, so the cluster only
+          # pulls what changed (a full 10 GB pull took ~30 min from GHCR).
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
