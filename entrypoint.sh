@@ -22,6 +22,9 @@ fi
 for d in /opt/seed/custom_nodes/*/; do
     [ -d "$d" ] || continue
     n=$(basename "$d")
+    if [ -e "${BASE}/custom_nodes/${n}/.keep-local" ]; then
+        echo "[entrypoint] keeping local (hot-patched) copy of ${n}"; continue
+    fi
     rm -rf "${BASE}/custom_nodes/${n}"
     cp -r "$d" "${BASE}/custom_nodes/${n}"
     echo "[entrypoint] synced bundled custom node: ${n}"

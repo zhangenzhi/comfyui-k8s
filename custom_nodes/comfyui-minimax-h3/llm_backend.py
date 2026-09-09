@@ -71,12 +71,14 @@ def chat(system, user, backend="local", model="", temperature=0.6, seed=0,
     import torch
     tok, mdl = _load_local(model or DEFAULT_LOCAL)
     msgs = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-    ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt").to("cuda")
+    enc = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt",
+                                  return_dict=True)
+    enc = {k: v.to("cuda") for k, v in enc.items()}
     gen = dict(max_new_tokens=int(max_new_tokens), do_sample=temperature > 0,
                pad_token_id=tok.eos_token_id)
     if temperature > 0:
         gen.update(temperature=float(temperature), top_p=0.9)
         torch.manual_seed(int(seed))
     with torch.inference_mode():
-        out = mdl.generate(ids, **gen)
-    return tok.decode(out[0, ids.shape[1]:], skip_special_tokens=True)
+        out = mdl.generate(**enc, **gen)
+    return tok.decode(out[0, enc["input_ids"].shape[1]:], skip_special_tokens=True)
