@@ -1,0 +1,1618 @@
+{
+ "last_node_id": 15,
+ "last_link_id": 41,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "MiniMaxH3_EpisodePlanner",
+   "pos": [
+    40,
+    40
+   ],
+   "size": [
+    420,
+    500
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "script_zh",
+     "type": "STRING",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "links": [
+      2,
+      5,
+      8,
+      11,
+      14
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "title",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_EpisodePlanner"
+   },
+   "widgets_values": [
+    "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓，男主先打压后护短，结尾他握住她拿移液枪的手。",
+    1,
+    5,
+    "local",
+    "Qwen2.5-14B-Instruct",
+    0.6,
+    3,
+    "fixed",
+    "",
+    "http://ollama:11434",
+    ""
+   ]
+  },
+  {
+   "id": 2,
+   "type": "PreviewAny",
+   "pos": [
+    40,
+    580
+   ],
+   "size": [
+    420,
+    180
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 3,
+   "type": "MiniMaxH3_ClipPromptBuilder",
+   "pos": [
+    560,
+    40
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "link": 2,
+     "widget": {
+      "name": "shot_plan_json"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "h3_prompt",
+     "type": "STRING",
+     "links": [
+      3
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "links": [
+      4
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "subtitles_srt",
+     "type": "STRING",
+     "links": [
+      18,
+      33
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "clip_count",
+     "type": "INT",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "aspect_ratio",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_ClipPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    1,
+    "t2va",
+    false
+   ]
+  },
+  {
+   "id": 4,
+   "type": "MiniMaxH3_Generate",
+   "pos": [
+    1080,
+    40
+   ],
+   "size": [
+    420,
+    780
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 3,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "link": 4,
+     "widget": {
+      "name": "duration_seconds"
+     }
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "reference_image",
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [
+      17,
+      27
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "video_id",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_Generate"
+   },
+   "widgets_values": [
+    "",
+    "t2va",
+    5.0,
+    "9:16",
+    101,
+    "fixed",
+    50,
+    768,
+    12.0,
+    3.0,
+    "h3/ep/clip1",
+    3600,
+    ""
+   ]
+  },
+  {
+   "id": 5,
+   "type": "MiniMaxH3_ClipPromptBuilder",
+   "pos": [
+    560,
+    340
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "link": 5,
+     "widget": {
+      "name": "shot_plan_json"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "h3_prompt",
+     "type": "STRING",
+     "links": [
+      6
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "links": [
+      7
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "subtitles_srt",
+     "type": "STRING",
+     "links": [
+      20,
+      35
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "clip_count",
+     "type": "INT",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "aspect_ratio",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_ClipPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    2,
+    "t2va",
+    false
+   ]
+  },
+  {
+   "id": 6,
+   "type": "MiniMaxH3_Generate",
+   "pos": [
+    1080,
+    860
+   ],
+   "size": [
+    420,
+    780
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 6,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "link": 7,
+     "widget": {
+      "name": "duration_seconds"
+     }
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "reference_image",
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [
+      19,
+      28
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "video_id",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_Generate"
+   },
+   "widgets_values": [
+    "",
+    "t2va",
+    5.0,
+    "9:16",
+    102,
+    "fixed",
+    50,
+    768,
+    12.0,
+    3.0,
+    "h3/ep/clip2",
+    3600,
+    ""
+   ]
+  },
+  {
+   "id": 7,
+   "type": "MiniMaxH3_ClipPromptBuilder",
+   "pos": [
+    560,
+    640
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "link": 8,
+     "widget": {
+      "name": "shot_plan_json"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "h3_prompt",
+     "type": "STRING",
+     "links": [
+      9
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "links": [
+      10
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "subtitles_srt",
+     "type": "STRING",
+     "links": [
+      22,
+      37
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "clip_count",
+     "type": "INT",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "aspect_ratio",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_ClipPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    3,
+    "t2va",
+    false
+   ]
+  },
+  {
+   "id": 8,
+   "type": "MiniMaxH3_Generate",
+   "pos": [
+    1080,
+    1680
+   ],
+   "size": [
+    420,
+    780
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 9,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "link": 10,
+     "widget": {
+      "name": "duration_seconds"
+     }
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "reference_image",
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [
+      21,
+      29
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "video_id",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_Generate"
+   },
+   "widgets_values": [
+    "",
+    "t2va",
+    5.0,
+    "9:16",
+    103,
+    "fixed",
+    50,
+    768,
+    12.0,
+    3.0,
+    "h3/ep/clip3",
+    3600,
+    ""
+   ]
+  },
+  {
+   "id": 9,
+   "type": "MiniMaxH3_ClipPromptBuilder",
+   "pos": [
+    560,
+    940
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "link": 11,
+     "widget": {
+      "name": "shot_plan_json"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "h3_prompt",
+     "type": "STRING",
+     "links": [
+      12
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "links": [
+      13
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "subtitles_srt",
+     "type": "STRING",
+     "links": [
+      24,
+      39
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "clip_count",
+     "type": "INT",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "aspect_ratio",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_ClipPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    4,
+    "t2va",
+    false
+   ]
+  },
+  {
+   "id": 10,
+   "type": "MiniMaxH3_Generate",
+   "pos": [
+    1080,
+    2500
+   ],
+   "size": [
+    420,
+    780
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 12,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "link": 13,
+     "widget": {
+      "name": "duration_seconds"
+     }
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "reference_image",
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [
+      23,
+      30
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "video_id",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_Generate"
+   },
+   "widgets_values": [
+    "",
+    "t2va",
+    5.0,
+    "9:16",
+    104,
+    "fixed",
+    50,
+    768,
+    12.0,
+    3.0,
+    "h3/ep/clip4",
+    3600,
+    ""
+   ]
+  },
+  {
+   "id": 11,
+   "type": "MiniMaxH3_ClipPromptBuilder",
+   "pos": [
+    560,
+    1240
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "shot_plan_json",
+     "type": "STRING",
+     "link": 14,
+     "widget": {
+      "name": "shot_plan_json"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "h3_prompt",
+     "type": "STRING",
+     "links": [
+      15
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "links": [
+      16
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "subtitles_srt",
+     "type": "STRING",
+     "links": [
+      26,
+      41
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "clip_count",
+     "type": "INT",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "aspect_ratio",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_ClipPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    5,
+    "t2va",
+    false
+   ]
+  },
+  {
+   "id": 12,
+   "type": "MiniMaxH3_Generate",
+   "pos": [
+    1080,
+    3320
+   ],
+   "size": [
+    420,
+    780
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 15,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "name": "duration_seconds",
+     "type": "FLOAT",
+     "link": 16,
+     "widget": {
+      "name": "duration_seconds"
+     }
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "reference_image",
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [
+      25,
+      31
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "video_id",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_Generate"
+   },
+   "widgets_values": [
+    "",
+    "t2va",
+    5.0,
+    "9:16",
+    105,
+    "fixed",
+    50,
+    768,
+    12.0,
+    3.0,
+    "h3/ep/clip5",
+    3600,
+    ""
+   ]
+  },
+  {
+   "id": 13,
+   "type": "MiniMaxH3_VideoConcat",
+   "pos": [
+    1600,
+    620
+   ],
+   "size": [
+    420,
+    900
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip_1",
+     "type": "STRING",
+     "link": 17
+    },
+    {
+     "name": "srt_1",
+     "type": "STRING",
+     "link": 18
+    },
+    {
+     "name": "clip_2",
+     "type": "STRING",
+     "link": 19
+    },
+    {
+     "name": "srt_2",
+     "type": "STRING",
+     "link": 20
+    },
+    {
+     "name": "clip_3",
+     "type": "STRING",
+     "link": 21
+    },
+    {
+     "name": "srt_3",
+     "type": "STRING",
+     "link": 22
+    },
+    {
+     "name": "clip_4",
+     "type": "STRING",
+     "link": 23
+    },
+    {
+     "name": "srt_4",
+     "type": "STRING",
+     "link": 24
+    },
+    {
+     "name": "clip_5",
+     "type": "STRING",
+     "link": 25
+    },
+    {
+     "name": "srt_5",
+     "type": "STRING",
+     "link": 26
+    },
+    {
+     "name": "clip_6",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_6",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_7",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_7",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_8",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_8",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_VideoConcat"
+   },
+   "widgets_values": [
+    "h3/ep/episode_768p",
+    true,
+    44,
+    0.0,
+    "/workspace/data/fonts/NotoSansCJK-Regular.ttc"
+   ]
+  },
+  {
+   "id": 14,
+   "type": "MiniMaxH3_SeedVR2Upscale",
+   "pos": [
+    1600,
+    40
+   ],
+   "size": [
+    420,
+    540
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip_1",
+     "type": "STRING",
+     "link": 27
+    },
+    {
+     "name": "clip_2",
+     "type": "STRING",
+     "link": 28
+    },
+    {
+     "name": "clip_3",
+     "type": "STRING",
+     "link": 29
+    },
+    {
+     "name": "clip_4",
+     "type": "STRING",
+     "link": 30
+    },
+    {
+     "name": "clip_5",
+     "type": "STRING",
+     "link": 31
+    },
+    {
+     "name": "clip_6",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_7",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_8",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "up_1",
+     "type": "STRING",
+     "links": [
+      32
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "up_2",
+     "type": "STRING",
+     "links": [
+      34
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "up_3",
+     "type": "STRING",
+     "links": [
+      36
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "up_4",
+     "type": "STRING",
+     "links": [
+      38
+     ],
+     "slot_index": 3
+    },
+    {
+     "name": "up_5",
+     "type": "STRING",
+     "links": [
+      40
+     ],
+     "slot_index": 4
+    },
+    {
+     "name": "up_6",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 5
+    },
+    {
+     "name": "up_7",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 6
+    },
+    {
+     "name": "up_8",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 7
+    },
+    {
+     "name": "report",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 8
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_SeedVR2Upscale"
+   },
+   "widgets_values": [
+    1440,
+    33,
+    7200,
+    "h3/ep/2k/clip"
+   ]
+  },
+  {
+   "id": 15,
+   "type": "MiniMaxH3_VideoConcat",
+   "pos": [
+    2120,
+    40
+   ],
+   "size": [
+    420,
+    900
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip_1",
+     "type": "STRING",
+     "link": 32
+    },
+    {
+     "name": "srt_1",
+     "type": "STRING",
+     "link": 33
+    },
+    {
+     "name": "clip_2",
+     "type": "STRING",
+     "link": 34
+    },
+    {
+     "name": "srt_2",
+     "type": "STRING",
+     "link": 35
+    },
+    {
+     "name": "clip_3",
+     "type": "STRING",
+     "link": 36
+    },
+    {
+     "name": "srt_3",
+     "type": "STRING",
+     "link": 37
+    },
+    {
+     "name": "clip_4",
+     "type": "STRING",
+     "link": 38
+    },
+    {
+     "name": "srt_4",
+     "type": "STRING",
+     "link": 39
+    },
+    {
+     "name": "clip_5",
+     "type": "STRING",
+     "link": 40
+    },
+    {
+     "name": "srt_5",
+     "type": "STRING",
+     "link": 41
+    },
+    {
+     "name": "clip_6",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_6",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_7",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_7",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "clip_8",
+     "type": "STRING",
+     "link": null
+    },
+    {
+     "name": "srt_8",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "video_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3_VideoConcat"
+   },
+   "widgets_values": [
+    "h3/ep/episode_2k",
+    true,
+    80,
+    0.0,
+    "/workspace/data/fonts/NotoSansCJK-Regular.ttc"
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   2,
+   0,
+   "*"
+  ],
+  [
+   2,
+   1,
+   1,
+   3,
+   0,
+   "STRING"
+  ],
+  [
+   3,
+   3,
+   0,
+   4,
+   0,
+   "STRING"
+  ],
+  [
+   4,
+   3,
+   1,
+   4,
+   1,
+   "FLOAT"
+  ],
+  [
+   5,
+   1,
+   1,
+   5,
+   0,
+   "STRING"
+  ],
+  [
+   6,
+   5,
+   0,
+   6,
+   0,
+   "STRING"
+  ],
+  [
+   7,
+   5,
+   1,
+   6,
+   1,
+   "FLOAT"
+  ],
+  [
+   8,
+   1,
+   1,
+   7,
+   0,
+   "STRING"
+  ],
+  [
+   9,
+   7,
+   0,
+   8,
+   0,
+   "STRING"
+  ],
+  [
+   10,
+   7,
+   1,
+   8,
+   1,
+   "FLOAT"
+  ],
+  [
+   11,
+   1,
+   1,
+   9,
+   0,
+   "STRING"
+  ],
+  [
+   12,
+   9,
+   0,
+   10,
+   0,
+   "STRING"
+  ],
+  [
+   13,
+   9,
+   1,
+   10,
+   1,
+   "FLOAT"
+  ],
+  [
+   14,
+   1,
+   1,
+   11,
+   0,
+   "STRING"
+  ],
+  [
+   15,
+   11,
+   0,
+   12,
+   0,
+   "STRING"
+  ],
+  [
+   16,
+   11,
+   1,
+   12,
+   1,
+   "FLOAT"
+  ],
+  [
+   17,
+   4,
+   1,
+   13,
+   0,
+   "STRING"
+  ],
+  [
+   18,
+   3,
+   2,
+   13,
+   1,
+   "STRING"
+  ],
+  [
+   19,
+   6,
+   1,
+   13,
+   2,
+   "STRING"
+  ],
+  [
+   20,
+   5,
+   2,
+   13,
+   3,
+   "STRING"
+  ],
+  [
+   21,
+   8,
+   1,
+   13,
+   4,
+   "STRING"
+  ],
+  [
+   22,
+   7,
+   2,
+   13,
+   5,
+   "STRING"
+  ],
+  [
+   23,
+   10,
+   1,
+   13,
+   6,
+   "STRING"
+  ],
+  [
+   24,
+   9,
+   2,
+   13,
+   7,
+   "STRING"
+  ],
+  [
+   25,
+   12,
+   1,
+   13,
+   8,
+   "STRING"
+  ],
+  [
+   26,
+   11,
+   2,
+   13,
+   9,
+   "STRING"
+  ],
+  [
+   27,
+   4,
+   1,
+   14,
+   0,
+   "STRING"
+  ],
+  [
+   28,
+   6,
+   1,
+   14,
+   1,
+   "STRING"
+  ],
+  [
+   29,
+   8,
+   1,
+   14,
+   2,
+   "STRING"
+  ],
+  [
+   30,
+   10,
+   1,
+   14,
+   3,
+   "STRING"
+  ],
+  [
+   31,
+   12,
+   1,
+   14,
+   4,
+   "STRING"
+  ],
+  [
+   32,
+   14,
+   0,
+   15,
+   0,
+   "STRING"
+  ],
+  [
+   33,
+   3,
+   2,
+   15,
+   1,
+   "STRING"
+  ],
+  [
+   34,
+   14,
+   1,
+   15,
+   2,
+   "STRING"
+  ],
+  [
+   35,
+   5,
+   2,
+   15,
+   3,
+   "STRING"
+  ],
+  [
+   36,
+   14,
+   2,
+   15,
+   4,
+   "STRING"
+  ],
+  [
+   37,
+   7,
+   2,
+   15,
+   5,
+   "STRING"
+  ],
+  [
+   38,
+   14,
+   3,
+   15,
+   6,
+   "STRING"
+  ],
+  [
+   39,
+   9,
+   2,
+   15,
+   7,
+   "STRING"
+  ],
+  [
+   40,
+   14,
+   4,
+   15,
+   8,
+   "STRING"
+  ],
+  [
+   41,
+   11,
+   2,
+   15,
+   9,
+   "STRING"
+  ]
+ ],
+ "groups": [],
+ "config": {},
+ "extra": {},
+ "version": 0.4
+}
