@@ -26,6 +26,54 @@ def _load_system_prompt(path=""):
     return (m.group(0) if m else s).strip()
 
 
+EXAMPLE_PLAN_PATH = os.path.join(os.path.dirname(__file__), "example_shot_plan.json")
+
+
+def _example_plan_text(max_clips=2):
+    try:
+        with open(EXAMPLE_PLAN_PATH, encoding="utf-8") as f:
+            ex = json.load(f)
+        ex["clips"] = ex["clips"][:max_clips]
+        return json.dumps(ex, ensure_ascii=False, indent=1)
+    except Exception:
+        return ""
+
+
+def validate_plan(plan, min_clips=3):
+    """Return a list of human-readable problems (empty = OK)."""
+    probs = []
+    clips = plan.get("clips") or []
+    if len(clips) < min_clips:
+        probs.append(f"只有 {len(clips)} 个片段，至少要 {min_clips} 个")
+    for c in clips:
+        i = c.get("index", "?")
+        d = float(c.get("duration", 0) or 0)
+        if not 4 <= d <= 15:
+            probs.append(f"片段 {i} 时长 {d}s 不在 4–15 s 内")
+        shots = c.get("shots") or []
+        if len(shots) < 2:
+            probs.append(f"片段 {i} 只有 {len(shots)} 个镜头，需要 2–4 个")
+        last = -1.0
+        for n, sh in enumerate(shots, 1):
+            st = float(sh.get("start", 0) or 0)
+            if n == 1 and st != 0:
+                probs.append(f"片段 {i} 镜头 1 的 start 必须是 0")
+            if st <= last and n > 1:
+                probs.append(f"片段 {i} 镜头 {n} 的 start 没有递增")
+            last = st
+            if not sh.get("action_en"):
+                probs.append(f"片段 {i} 镜头 {n} 缺 action_en")
+            for dlg in sh.get("dialogue") or []:
+                t = dlg.get("text_zh", "")
+                nxt = float(shots[n]["start"]) if n < len(shots) else d
+                if len(t) > max(4, (nxt - st) * bible.CHARS_PER_SECOND + 2):
+                    probs.append(f"片段 {i} 镜头 {n} 台词太长（{len(t)} 字，镜头只有 {nxt - st:.1f} s）")
+        total = sum(len(dl.get("text_zh", "")) for sh in shots for dl in (sh.get("dialogue") or []))
+        if total > 45:
+            probs.append(f"片段 {i} 台词总字数 {total} > 45")
+    return probs
+
+
 def _extract_json(text):
     tag = text.find("【分镜计划JSON】")
     body = text[tag + len("【分镜计划JSON】"):] if tag >= 0 else text
@@ -111,15 +159,38 @@ class H3EpisodePlanner:
     def plan(self, request, episode, clips, backend, model, temperature, seed,
              system_prompt_path="", ollama_url="http://ollama:11434", llm_url=""):
         system = _load_system_prompt(system_prompt_path)
+        ex = _example_plan_text()
+        if ex:
+            system += ("\n\n### 7. 完整示例（第一集前两段的分镜计划 JSON，严格照此粒度：每段 2–4 个镜头、"
+                       "每镜头有 start / shot_type / characters / action_en / camera_en / dialogue / sfx_en）\n" + ex)
         user = (f"请写第 {episode} 集，切成 {clips} 个片段。需求：{request.strip()}\n"
                 "先输出【剧本】，再输出【分镜计划JSON】和 JSON 本体。characters 里必须包含 shen 和 gu，"
-                "外形与声音描述照抄人物圣经。")
+                "外形与声音描述照抄人物圣经。action_en 里用 she/he 或 the woman/the man 指代，不要写名字。"
+                "每个片段必须有 2–4 个镜头，镜头 1 的 start 为 0，后续镜头 start 递增；台词按语速 4 字/秒控制长度。")
         text = llm.chat(system, user, backend=backend, model=model, temperature=temperature,
                         seed=seed, max_new_tokens=6000, ollama_url=ollama_url, openai_url=llm_url)
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001
             raise RuntimeError(f"shot plan JSON invalid ({e}). Raw output:\n{text[-1500:]}")
+        probs = validate_plan(plan)
+        if probs:
+            print(f"[H3 planner] {len(probs)} problems, asking the model to repair: {probs[:6]}")
+            fix_user = ("下面是你刚才输出的分镜计划 JSON，它违反了这些生成规则：\n- " + "\n- ".join(probs[:12]) +
+                        "\n请只输出修正后的完整 JSON（不要剧本、不要解释、不要代码围栏），保持同样的结构：\n" +
+                        json.dumps(plan, ensure_ascii=False))
+            text2 = llm.chat(system, fix_user, backend=backend, model=model, temperature=max(0.2, temperature - 0.2),
+                             seed=seed + 1, max_new_tokens=6000, ollama_url=ollama_url, openai_url=llm_url)
+            try:
+                plan2 = _extract_json(text2)
+                if len(validate_plan(plan2)) < len(probs):
+                    plan = plan2
+                    probs = validate_plan(plan)
+            except Exception as e:  # noqa: BLE001
+                print(f"[H3 planner] repair round failed to parse: {e}")
+        if probs:
+            print(f"[H3 planner] remaining problems: {probs}")
+        plan["_problems"] = probs
         plan.setdefault("episode", episode)
         # Force the bible in, whatever the model wrote.
         chars = plan.setdefault("characters", {})
@@ -208,7 +279,15 @@ class H3ClipPromptBuilder:
                 seg.append(_cap(sh["sfx_en"].strip().rstrip(".") + " is audible."))
             if sh.get("camera_en"):
                 cam = sh["camera_en"].strip().rstrip(".")
-                seg.append(f"The camera {cam}." if not cam.lower().startswith("the camera") else cam + ".")
+                low = cam.lower()
+                if low.startswith("the camera"):
+                    seg.append(cam + ".")
+                elif low in ("static", "static shot", "holds", "hold"):
+                    seg.append("The camera holds a static shot.")
+                elif low.startswith(("static shot", "holds a static")):
+                    seg.append("The camera holds a static shot.")
+                else:
+                    seg.append(f"The camera {cam}.")
             parts.append(" ".join(seg))
 
         body = ("integrated_multimodal_description: " + " ".join(parts) + "\n\n"
