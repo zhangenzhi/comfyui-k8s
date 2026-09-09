@@ -49,6 +49,22 @@ def _cap(s):
     return s[:1].upper() + s[1:] if s else s
 
 
+def _wrap_zh(text, width=14):
+    """libass in ffmpeg 4.4 does not line-break CJK text without spaces: pre-wrap it."""
+    text = text.strip()
+    if len(text) <= width:
+        return text
+    # prefer breaking after Chinese punctuation
+    out, cur = [], ""
+    for ch in text:
+        cur += ch
+        if len(cur) >= width or (ch in "，。？！；：、" and len(cur) >= width - 4):
+            out.append(cur); cur = ""
+    if cur:
+        out.append(cur)
+    return "\n".join(out[:3])   # at most 3 lines on screen
+
+
 def _srt_ts(sec):
     h = int(sec // 3600); m = int((sec % 3600) // 60); s = sec % 60
     return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s - int(s)) * 1000)):03d}"
@@ -183,7 +199,7 @@ class H3ClipPromptBuilder:
                 else:
                     seg.append(f"{who} says: <d>[{lang}] {text}</d>")
                 dur = min(span, max(1.0, len(text) / bible.CHARS_PER_SECOND))
-                srt.append(f"{srt_i}\n{_srt_ts(start)} --> {_srt_ts(start + dur)}\n{text}\n")
+                srt.append(f"{srt_i}\n{_srt_ts(start)} --> {_srt_ts(start + dur)}\n{_wrap_zh(text)}\n")
                 srt_i += 1
             if sh.get("sfx_en"):
                 seg.append(_cap(sh["sfx_en"].strip().rstrip(".") + " is audible."))
