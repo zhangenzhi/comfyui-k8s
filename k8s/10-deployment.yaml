@@ -35,7 +35,8 @@ spec:
       #   - name: dockerhub-secret
       containers:
         - name: comfyui
-          image: ghcr.io/zhangenzhi/comfyui:latest
+          # Pinned by digest so restarts never pull; bump deliberately after a new build (README §更新).
+          image: ghcr.io/zhangenzhi/comfyui@sha256:b346d8fd2708dfb6ae8dfb43fd1ea6fd83442966445ac367fa55333af5faffd8
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true

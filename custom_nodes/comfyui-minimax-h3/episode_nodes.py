@@ -318,7 +318,8 @@ class H3VideoConcat:
         return {"required": {
                     "filename_prefix": ("STRING", {"default": "h3/episode"}),
                     "burn_subtitles": ("BOOLEAN", {"default": True}),
-                    "font_size": ("INT", {"default": 18, "min": 8, "max": 72}),
+                    "font_size": ("INT", {"default": 44, "min": 12, "max": 160,
+                                  "tooltip": "字幕字高（视频像素）。768x1344 用 44，2K 用 80 左右"}),
                     "crossfade_s": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.1,
                                     "tooltip": "0 = hard cut (recommended for drama pacing)"}),
                 },
@@ -345,11 +346,20 @@ class H3VideoConcat:
                 out = os.path.join(work, f"c{i}.mp4")
                 vf = "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=24"
                 if burn_subtitles and srt.strip():
+                    # ffmpeg converts SRT to ASS with PlayResY=288 and scales by video height,
+                    # so an ASS font size of S renders at S*H/288 px. Convert the requested px size.
+                    try:
+                        h_px = int(subprocess.check_output(
+                            ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                             "stream=height", "-of", "csv=p=0", p]).decode().strip().split(",")[0])
+                    except Exception:
+                        h_px = 1344
+                    ass_size = max(6, round(font_size * 288 / h_px))
                     sp = os.path.join(work, f"c{i}.srt")
                     with open(sp, "w", encoding="utf-8") as f:
                         f.write(srt)
                     fontsdir = os.path.dirname(font_file) if font_file and os.path.exists(font_file) else ""
-                    style = f"FontSize={font_size},Outline=1,Shadow=0,MarginV=40"
+                    style = f"FontSize={ass_size},Outline=1,Shadow=0,MarginV=24,MarginL=8,MarginR=8"
                     if fontsdir:
                         style = "FontName=Noto Sans CJK SC," + style
                         vf += f",subtitles={sp}:fontsdir={fontsdir}:force_style='{style}'"
