@@ -117,6 +117,17 @@ kubectl -n $NS create secret generic comfyui-hf-token --from-literal=token=hf_xx
 
 ## 5. 自定义节点 / 更新
 
+**镜像按 digest 固定**：`k8s/10-deployment.yaml` 里的 `image:` 是 `@sha256:…`，所以 `rollout restart` 不会拉镜像（约 1 分钟恢复）。
+从 GHCR 拉一整包约 10 GB 只有 ~6 MB/s，曾经花了 30 分钟，因此升级镜像按这个顺序：
+1. push 到 main 触发构建（`Dockerfile` / `entrypoint.sh` / `custom_nodes/**` 变更都会触发，构建有层缓存）。
+2. `kubectl apply -f k8s/90-prepull-job.yaml` 在节点上预拉（不占 GPU，不停机），`kubectl wait --for=condition=complete job/comfyui-prepull -n c30636-default --timeout=40m`。
+   注意预拉 Job 用 `nodeName` 钉在 ComfyUI 当前所在节点（`kubectl get pod -l app=comfyui -o wide`）。
+3. 把新 digest（`gh api /users/zhangenzhi/packages/container/comfyui/versions --jq '.[0].name'`）写进 `10-deployment.yaml` 再 `kubectl apply`。
+
+**改节点代码不重建镜像**：`kubectl cp custom_nodes/comfyui-minimax-h3/<file> <pod>:/workspace/data/custom_nodes/comfyui-minimax-h3/`，
+PVC 里有 `.keep-local` 标记时 entrypoint 不会用镜像副本覆盖；`rollout restart` 让 ComfyUI 重新加载（约 1 分钟）。
+
+
 - **ComfyUI-Manager** 首次启动时自动注入到 `/workspace/data/custom_nodes/`，之后通过 UI 的 Manager 装节点、装模型。
   节点 pip 依赖走 `PIP_USER=1`，装到 PVC 的 `.pyuser/`，重启不丢。
   监听 0.0.0.0 时 Manager 默认 `security_level=normal` 会禁用 "从 git URL 安装"，需要的话改
