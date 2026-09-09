@@ -5,7 +5,7 @@
 # Build:  docker build -t comfyui:0.1.0 -f Dockerfile .
 # Run:    docker run --rm --gpus all -p 8188:8188 -v $PWD/data:/workspace/data comfyui:0.1.0
 
-ARG BASE_IMAGE=pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+ARG BASE_IMAGE=pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime
 FROM ${BASE_IMAGE}
 
 # Pin these for reproducible rebuilds (git tag / commit); "master" = latest.

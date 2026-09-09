@@ -46,7 +46,7 @@ gh run watch -R zhangenzhi/comfyui-k8s
 
 本机有 GPU 的话可以先 `docker compose up --build` 打开 http://localhost:8188 冒烟。
 
-> 底座 `pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime`（CUDA 12.4，节点 12.8 驱动可跑）。
+> 底座 `pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime`（ComfyUI 当前 master 需要 torch ≥ 2.8；节点驱动支持 CUDA 12.8）。
 > 想换 torch/CUDA 版本改 `--build-arg BASE_IMAGE=...` 即可。
 
 ## 2. 部署
@@ -132,7 +132,7 @@ kubectl -n $NS create secret generic comfyui-hf-token --from-literal=token=hf_xx
 |---|---|
 | pod `Pending`，Events 里 `Insufficient nvidia.com/gpu` | GPU 被占；`kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu` 看空闲，或先缩掉别的 GPU 负载 |
 | pod 起不来，Events 里 `violates PodSecurity "restricted"` | 别删 `securityContext` 那几行（runAsNonRoot / drop ALL / seccomp） |
-| `CUDA error: no kernel image` / driver 版本不够 | 换底座为 cu121 或更低：`--build-arg BASE_IMAGE=pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime` |
+| `CUDA error: no kernel image` / driver 版本不够 | 换底座为 cu126：`--build-arg BASE_IMAGE=pytorch/pytorch:2.8.0-cuda12.6-cudnn9-runtime`（再低的 torch 跑不了当前 ComfyUI） |
 | 一直 `startupProbe failed` | 自定义节点 import 太慢或崩；`kubectl logs` 看堆栈，必要时把出问题的目录从 `custom_nodes/` 移走 |
 | PVC 一直 `Pending` | 没有默认 StorageClass；`kubectl get sc`，在 `00-pvc.yaml` 填 `storageClassName` |
 | `kubectl` 报 `system:unauthenticated` | kubeconfig token 过期，回 Rancher 重新下载 |
