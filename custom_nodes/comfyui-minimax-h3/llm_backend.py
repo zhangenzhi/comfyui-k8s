@@ -3,8 +3,9 @@
   ollama : the in-cluster Ollama service (CPU-only here, ~1.5 tok/s for 7B -> slow)
   openai : any OpenAI-compatible chat endpoint (H3_LLM_URL / H3_LLM_MODEL / H3_LLM_KEY),
            e.g. an LLM served on the HPC by minimax-h3/scripts/serve_llm.pbs, or a cloud API.
-  local  : transformers on the ComfyUI pod's own GPU. NOT the default: the user wants the
-           pod's H100 left alone; video and LLM work belong on the HPC (c30636g).
+  local  : transformers on the ComfyUI pod's own H100 (the research-cloud GPU), kept
+           RESIDENT between calls (decision 2026-09-09). Video inference stays on the HPC.
+           ComfyUI runs with --reserve-vram 30 so its own model manager leaves room for it.
            Weights: <H3_LLM_DIR>/<model> (fetch-llm Qwen/Qwen2.5-14B-Instruct).
 """
 import os
@@ -18,8 +19,8 @@ DEFAULT_OLLAMA = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")
 OPENAI_URL = os.environ.get("H3_LLM_URL", "")          # e.g. http://172.31.17.244:30011/v1
 OPENAI_MODEL = os.environ.get("H3_LLM_MODEL", "Qwen2.5-14B-Instruct")
 OPENAI_KEY = os.environ.get("H3_LLM_KEY", "EMPTY")
-DEFAULT_BACKEND = os.environ.get("H3_LLM_BACKEND", "openai" if OPENAI_URL else "ollama")
-BACKENDS = ["openai", "ollama", "local"]
+DEFAULT_BACKEND = os.environ.get("H3_LLM_BACKEND", "local")
+BACKENDS = ["local", "openai", "ollama"]
 
 _lock = threading.Lock()
 _cache = {}  # model name -> (tokenizer, model)

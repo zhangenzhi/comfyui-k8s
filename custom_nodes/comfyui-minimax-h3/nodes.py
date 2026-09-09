@@ -222,7 +222,7 @@ class H3PromptRewrite:
                 "dialogue_language": (["Chinese", "English", "Japanese", "none"], {"default": "Chinese"}),
                 "style": ("STRING", {"default": "Live-action, cinematic"}),
                 "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND}),
-                "model": ("STRING", {"default": llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA}),
+                "model": ("STRING", {"default": llm.DEFAULT_LOCAL if llm.DEFAULT_BACKEND == "local" else (llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA)}),
                 "temperature": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 2.0, "step": 0.05}),
             },
             "optional": {

@@ -164,7 +164,7 @@ System Prompt v2（机器可读分镜版）在 `custom_nodes/comfyui-minimax-h3/
 
 | 节点（分类 MiniMax-H3 (HPC)/drama） | 作用 |
 |---|---|
-| **H3 Episode Planner** | 用 v2 提示词写一集：输出中文剧本 + 分镜计划 JSON（5–7 段 ≤15 s，每镜头带秒数/镜头语言/台词/说话人）。`backend=local` 用 pod 自己的 H100 跑 `Qwen2.5-14B-Instruct`（推荐），`ollama` 走集群 CPU 服务（慢） |
+| **H3 Episode Planner** | 用 v2 提示词写一集：输出中文剧本 + 分镜计划 JSON（5–7 段 ≤15 s，每镜头带秒数/镜头语言/台词/说话人）。默认 `backend=local`：`Qwen2.5-14B-Instruct` 常驻在 pod（RC）的 H100 上（ComfyUI 以 `--reserve-vram 30` 启动）；`openai` 可接 HPC 上 `serve_llm.pbs` 起的服务或云端 API；`ollama` 走集群 CPU（慢） |
 | **H3 Clip Prompt Builder** | 确定性地把第 N 段转成 H3 三段式英文提示词（自动插入固定外形/声线、S1/S2、画外音闭嘴规则、时间戳），并输出该段的中文 SRT |
 | **H3 Video Concat + Subtitles** | ffmpeg 归一化、烧中文字幕（Noto Sans CJK）、硬切或交叉淡化拼接成整集 |
 

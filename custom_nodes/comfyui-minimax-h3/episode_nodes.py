@@ -68,9 +68,9 @@ class H3EpisodePlanner:
                 "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
                 "clips": ("INT", {"default": 6, "min": 3, "max": 8, "tooltip": "片段数（每段 8–15 s）"}),
                 "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND,
-                            "tooltip": "openai = HPC/云端 OpenAI 兼容接口(H3_LLM_URL)；ollama = 集群 CPU 服务（慢）；"
-                                       "local = 占用 pod 的 H100，仅调试用"}),
-                "model": ("STRING", {"default": llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA,
+                            "tooltip": "local = 常驻在 pod 的 H100 上（默认）；openai = HPC/云端 OpenAI 兼容接口(H3_LLM_URL)；"
+                                       "ollama = 集群 CPU 服务（慢）"}),
+                "model": ("STRING", {"default": llm.DEFAULT_LOCAL if llm.DEFAULT_BACKEND == "local" else (llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA),
                           "tooltip": "openai/ollama: 服务端模型名；local: /workspace/data/llm/<name>"}),
                 "temperature": ("FLOAT", {"default": 0.6, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**31 - 1, "control_after_generate": True}),
