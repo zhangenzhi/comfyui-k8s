@@ -14,7 +14,10 @@
 #
 # What was added there (2026-09-09):
 #   - ConfigMap ffformer-nginx-tls:  location = /test/comfyui  (301 -> trailing slash, absolute_redirect off)
-#                                     location /test/comfyui/  (auth_basic + proxy_pass http://comfyui-svc:8188/ + WebSocket headers)
+#                                     location /test/comfyui/  (auth_basic + WebSocket headers +
+#                                       proxy_pass http://comfyui_backend$comfyui_uri  where $comfyui_uri is a map of
+#                                       $request_uri with the prefix stripped: keeps %2F-encoded userdata paths and
+#                                       query strings intact; an `upstream comfyui_backend` block avoids needing a resolver)
 #   - Deployment ffformer-tls:       volume `auth` from Secret comfyui-htpasswd mounted at /etc/nginx/auth
 #
 # Basic Auth users (Secret comfyui-htpasswd, created out-of-band, NOT committed):
