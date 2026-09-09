@@ -168,7 +168,7 @@ class H3EpisodePlanner:
                 "外形与声音描述照抄人物圣经。action_en 里用 she/he 或 the woman/the man 指代，不要写名字。"
                 "每个片段必须有 2–4 个镜头，镜头 1 的 start 为 0，后续镜头 start 递增；台词按语速 4 字/秒控制长度。")
         text = llm.chat(system, user, backend=backend, model=model, temperature=temperature,
-                        seed=seed, max_new_tokens=6000, ollama_url=ollama_url, openai_url=llm_url)
+                        seed=seed, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001
@@ -180,7 +180,7 @@ class H3EpisodePlanner:
                         "\n请只输出修正后的完整 JSON（不要剧本、不要解释、不要代码围栏），保持同样的结构：\n" +
                         json.dumps(plan, ensure_ascii=False))
             text2 = llm.chat(system, fix_user, backend=backend, model=model, temperature=max(0.2, temperature - 0.2),
-                             seed=seed + 1, max_new_tokens=6000, ollama_url=ollama_url, openai_url=llm_url)
+                             seed=seed + 1, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
             try:
                 plan2 = _extract_json(text2)
                 if len(validate_plan(plan2)) < len(probs):
