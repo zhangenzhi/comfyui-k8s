@@ -50,15 +50,17 @@ def _cap(s):
 
 
 def _wrap_zh(text, width=14):
-    """libass in ffmpeg 4.4 does not line-break CJK text without spaces: pre-wrap it."""
+    """libass in ffmpeg 4.4 does not line-break CJK text without spaces: pre-wrap it.
+    Breaks preferably right after Chinese punctuation, never right before it."""
     text = text.strip()
     if len(text) <= width:
         return text
-    # prefer breaking after Chinese punctuation
+    punct = "，。？！；：、"
     out, cur = [], ""
-    for ch in text:
+    for i, ch in enumerate(text):
         cur += ch
-        if len(cur) >= width or (ch in "，。？！；：、" and len(cur) >= width - 4):
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        if (ch in punct and len(cur) >= width - 5) or (len(cur) >= width and nxt not in punct):
             out.append(cur); cur = ""
     if cur:
         out.append(cur)
