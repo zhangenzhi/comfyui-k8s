@@ -172,7 +172,19 @@ class H3EpisodePlanner:
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001
-            raise RuntimeError(f"shot plan JSON invalid ({e}). Raw output:\n{text[-1500:]}")
+            # One repair round for syntax errors: hand the broken JSON + parser message back.
+            print(f"[H3 planner] JSON parse failed ({e}); asking the model to fix the syntax")
+            tag = text.find("【分镜计划JSON】")
+            broken = text[tag + len("【分镜计划JSON】"):] if tag >= 0 else text
+            fix_user = (f"下面这段 JSON 无法解析，解析器报错：{e}\n"
+                        "请只输出修正后的完整 JSON（不要剧本、不要解释、不要代码围栏），内容保持不变，只修语法"
+                        "（未闭合的引号/括号、多余逗号、字符串里的英文双引号要转义）：\n" + broken.strip())
+            text2 = llm.chat(system, fix_user, backend=backend, model=model, temperature=0.1,
+                             seed=seed + 7, max_new_tokens=12000, ollama_url=ollama_url, openai_url=llm_url)
+            try:
+                plan = _extract_json(text2)
+            except Exception as e2:  # noqa: BLE001
+                raise RuntimeError(f"shot plan JSON invalid after repair ({e2}). Raw output tail:\n{text2[-1500:]}")
         probs = validate_plan(plan)
         if probs:
             print(f"[H3 planner] {len(probs)} problems, asking the model to repair: {probs[:6]}")
