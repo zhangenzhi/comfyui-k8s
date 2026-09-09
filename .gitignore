@@ -1,0 +1,4 @@
+data/
+*.crt
+*.key
+htpasswd

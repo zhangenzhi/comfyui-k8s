@@ -1,0 +1,151 @@
+# ComfyUI on the Rancher cluster (namespace c30636-default, PodSecurity=restricted).
+# Modeled on ffformer/deploy/k8s-deployment.yaml.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comfyui
+  namespace: c30636-default
+  labels:
+    app: comfyui
+    workload.user.cattle.io/workloadselector: apps.deployment-c30636-default-comfyui
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 900
+  strategy:
+    type: Recreate          # single GPU + RWO PVC: never run two pods at once
+  selector:
+    matchLabels:
+      app: comfyui
+  template:
+    metadata:
+      labels:
+        app: comfyui
+        workload.user.cattle.io/workloadselector: apps.deployment-c30636-default-comfyui
+      namespace: c30636-default
+    spec:
+      runtimeClassName: nvidia
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # imagePullSecrets:          # only if the image is private on Docker Hub
+      #   - name: dockerhub-secret
+      containers:
+        - name: comfyui
+          image: ghcr.io/zhangenzhi/comfyui:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            privileged: false
+            capabilities:
+              drop:
+                - ALL
+          # Debug: replace with sleep to poke around
+          #   command: ["sleep"]
+          #   args: ["infinity"]
+          ports:
+            - name: http
+              containerPort: 8188
+              protocol: TCP
+          env:
+            - name: COMFYUI_BASE_DIR
+              value: /workspace/data
+            - name: COMFYUI_PORT
+              value: "8188"
+            # Extra ComfyUI CLI flags, e.g. "--preview-method auto --highvram"
+            - name: COMFYUI_ARGS
+              value: "--preview-method auto"
+            # 1 = git pull ComfyUI at every start (like ffformer entrypoint). 0 = pinned image code.
+            - name: COMFYUI_AUTO_UPDATE
+              value: "0"
+            - name: HF_TOKEN            # for fetch-model on gated HF repos (optional)
+              valueFrom:
+                secretKeyRef:
+                  name: comfyui-hf-token
+                  key: token
+                  optional: true
+          volumeMounts:
+            - name: data-vol
+              mountPath: /workspace/data
+            - name: shm
+              mountPath: /dev/shm
+          resources:
+            requests:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "16"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+          # Startup can be slow (custom nodes import, first-run pip). Give it up to 15 min.
+          startupProbe:
+            httpGet:
+              path: /system_stats
+              port: http
+            periodSeconds: 10
+            failureThreshold: 90
+          readinessProbe:
+            httpGet:
+              path: /system_stats
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /system_stats
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+      volumes:
+        - name: data-vol
+          persistentVolumeClaim:
+            claimName: comfyui-pvc
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi
+---
+# In-cluster entry (ClusterIP) - used by the TLS proxy and by port-forward.
+apiVersion: v1
+kind: Service
+metadata:
+  name: comfyui-svc
+  namespace: c30636-default
+  labels:
+    app: comfyui
+spec:
+  type: ClusterIP
+  selector:
+    app: comfyui
+  ports:
+    - name: http
+      port: 8188
+      targetPort: http
+      protocol: TCP
+---
+# NodePort for quick LAN access (same as ffformer-infer-svc). Delete if not wanted.
+apiVersion: v1
+kind: Service
+metadata:
+  name: comfyui-nodeport
+  namespace: c30636-default
+  labels:
+    app: comfyui
+spec:
+  type: NodePort
+  selector:
+    app: comfyui
+  ports:
+    - name: http
+      port: 8188
+      targetPort: http
+      protocol: TCP

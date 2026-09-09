@@ -1,0 +1,25 @@
+# Local GPU smoke test (needs nvidia-container-toolkit):
+#   docker compose up --build
+#   open http://localhost:8188
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: comfyui:latest
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./data:/workspace/data
+    environment:
+      - COMFYUI_BASE_DIR=/workspace/data
+      - COMFYUI_ARGS=--preview-method auto
+    shm_size: "8g"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped

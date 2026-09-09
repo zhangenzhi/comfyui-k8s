@@ -1,0 +1,21 @@
+# Persistent storage for ComfyUI: models / custom_nodes / input / output / user.
+# Mounted at /workspace/data (ComfyUI --base-directory). Same idea as ffformer-pvc.
+#
+# storageClassName is left unset -> cluster default. Check with:
+#   kubectl get storageclass
+# If an RWX class exists, prefer ReadWriteMany so the model-fetch Job and the
+# ComfyUI pod can be on different nodes at the same time.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: comfyui-pvc
+  namespace: c30636-default
+  labels:
+    app: comfyui
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # storageClassName: <your-class>
+  resources:
+    requests:
+      storage: 300Gi

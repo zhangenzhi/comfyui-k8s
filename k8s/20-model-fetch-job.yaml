@@ -1,0 +1,92 @@
+# One-shot bulk model download into comfyui-pvc.
+#
+# NOTE: comfyui-pvc is ReadWriteOnce. Either scale ComfyUI to 0 first
+#   kubectl -n c30636-default scale deploy comfyui --replicas=0
+# or just download from inside the running pod instead:
+#   kubectl -n c30636-default exec deploy/comfyui -- fetch-model checkpoints <url>
+#
+# Edit the list below (one "<subdir> <url> [filename]" per line), then:
+#   kubectl apply -f 20-model-fetch-job.yaml
+#   kubectl -n c30636-default logs -f job/comfyui-model-fetch
+#   kubectl delete -f 20-model-fetch-job.yaml   # rerun = delete + apply
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: comfyui-model-list
+  namespace: c30636-default
+data:
+  models.txt: |
+    # subdir            url
+    checkpoints         https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+    vae                 https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors
+    upscale_models      https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth
+    # FLUX.1-dev (gated: needs comfyui-hf-token secret)
+    # diffusion_models  https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors
+    # text_encoders     https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+    # text_encoders     https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors
+    # vae               https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: comfyui-model-fetch
+  namespace: c30636-default
+  labels:
+    app: comfyui
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: comfyui-model-fetch
+    spec:
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: fetch
+          image: ghcr.io/zhangenzhi/comfyui:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              grep -vE '^\s*(#|$)' /config/models.txt | while read -r sub url name; do
+                fetch-model "$sub" "$url" $name
+              done
+              echo "[job] all models fetched"; du -sh /workspace/data/models/*
+          env:
+            - name: COMFYUI_BASE_DIR
+              value: /workspace/data
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: comfyui-hf-token
+                  key: token
+                  optional: true
+          volumeMounts:
+            - name: data-vol
+              mountPath: /workspace/data
+            - name: model-list
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests: { cpu: "1", memory: 1Gi }
+            limits:   { cpu: "2", memory: 2Gi }
+      volumes:
+        - name: data-vol
+          persistentVolumeClaim:
+            claimName: comfyui-pvc
+        - name: model-list
+          configMap:
+            name: comfyui-model-list
