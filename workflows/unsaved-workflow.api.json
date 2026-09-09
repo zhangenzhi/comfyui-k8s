@@ -3,7 +3,7 @@
   "planner": {
    "class_type": "MiniMaxH3_EpisodePlanner",
    "inputs": {
-    "request": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓，男主先打压后护短，亲自推导核心机理，结尾他握住她拿移液枪的手。",
+    "request": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓，男主先打压后护短，亲自在白板推导核心机理，带她进顶配仪器室，结尾他握住她拿移液枪的手。第 1 段镜头 1 必须从女主独自坐在超分辨显微镜前工作开始（该画面首帧已由定妆关键帧给定），报告被甩到台面后她再蹲下捡。全集 12 段、每段 12–15 秒，同一场景延续的段落 continue_from_previous 为 true。",
     "episode": 1,
     "clips": 12,
     "backend": "local",
@@ -55,7 +55,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip01",
+    "filename_prefix": "h3/ep01_3min/clip01",
     "timeout_s": 3600,
     "use_keyframes": [
      "b1",
@@ -109,7 +109,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip02",
+    "filename_prefix": "h3/ep01_3min/clip02",
     "timeout_s": 3600,
     "use_keyframes": [
      "b2",
@@ -163,7 +163,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip03",
+    "filename_prefix": "h3/ep01_3min/clip03",
     "timeout_s": 3600,
     "use_keyframes": [
      "b3",
@@ -217,7 +217,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip04",
+    "filename_prefix": "h3/ep01_3min/clip04",
     "timeout_s": 3600,
     "use_keyframes": [
      "b4",
@@ -271,7 +271,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip05",
+    "filename_prefix": "h3/ep01_3min/clip05",
     "timeout_s": 3600,
     "use_keyframes": [
      "b5",
@@ -325,7 +325,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip06",
+    "filename_prefix": "h3/ep01_3min/clip06",
     "timeout_s": 3600,
     "use_keyframes": [
      "b6",
@@ -379,7 +379,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip07",
+    "filename_prefix": "h3/ep01_3min/clip07",
     "timeout_s": 3600,
     "use_keyframes": [
      "b7",
@@ -433,7 +433,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip08",
+    "filename_prefix": "h3/ep01_3min/clip08",
     "timeout_s": 3600,
     "use_keyframes": [
      "b8",
@@ -487,7 +487,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip09",
+    "filename_prefix": "h3/ep01_3min/clip09",
     "timeout_s": 3600,
     "use_keyframes": [
      "b9",
@@ -541,7 +541,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip10",
+    "filename_prefix": "h3/ep01_3min/clip10",
     "timeout_s": 3600,
     "use_keyframes": [
      "b10",
@@ -595,7 +595,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip11",
+    "filename_prefix": "h3/ep01_3min/clip11",
     "timeout_s": 3600,
     "use_keyframes": [
      "b11",
@@ -649,7 +649,7 @@
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep/clip12",
+    "filename_prefix": "h3/ep01_3min/clip12",
     "timeout_s": 3600,
     "use_keyframes": [
      "b12",
@@ -665,7 +665,7 @@
   "concat768": {
    "class_type": "MiniMaxH3_VideoConcat",
    "inputs": {
-    "filename_prefix": "h3/ep/episode_768p",
+    "filename_prefix": "h3/ep01_3min/episode01_768p",
     "burn_subtitles": true,
     "font_size": 44,
     "crossfade_s": 0.0,
@@ -774,7 +774,7 @@
     "resolution": 1440,
     "batch_size": 33,
     "timeout_s": 10800,
-    "filename_prefix": "h3/ep/2k/clip",
+    "filename_prefix": "h3/ep01_3min/2k/clip",
     "clip_1": [
      "g1",
      1
@@ -828,7 +828,7 @@
   "concat2k": {
    "class_type": "MiniMaxH3_VideoConcat",
    "inputs": {
-    "filename_prefix": "h3/ep/episode_2k",
+    "filename_prefix": "h3/ep01_3min/episode01_2k",
     "burn_subtitles": true,
     "font_size": 80,
     "crossfade_s": 0.0,
