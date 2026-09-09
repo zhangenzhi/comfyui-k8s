@@ -60,7 +60,8 @@ def _wrap_zh(text, width=14):
     for i, ch in enumerate(text):
         cur += ch
         nxt = text[i + 1] if i + 1 < len(text) else ""
-        if (ch in punct and len(cur) >= width - 5) or (len(cur) >= width and nxt not in punct):
+        inside_word = ch.isascii() and ch.isalnum() and nxt.isascii() and nxt.isalnum()
+        if (ch in punct and len(cur) >= width - 5) or (len(cur) >= width and nxt not in punct and not inside_word):
             out.append(cur); cur = ""
     if cur:
         out.append(cur)
