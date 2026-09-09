@@ -221,12 +221,13 @@ class H3PromptRewrite:
                 "aspect_ratio": (ASPECTS, {"default": "16:9"}),
                 "dialogue_language": (["Chinese", "English", "Japanese", "none"], {"default": "Chinese"}),
                 "style": ("STRING", {"default": "Live-action, cinematic"}),
-                "backend": (llm.BACKENDS, {"default": "local"}),
-                "model": ("STRING", {"default": llm.DEFAULT_LOCAL}),
+                "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND}),
+                "model": ("STRING", {"default": llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA}),
                 "temperature": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 2.0, "step": 0.05}),
             },
             "optional": {
                 "ollama_url": ("STRING", {"default": os.environ.get("OLLAMA_URL", "http://ollama:11434")}),
+                "llm_url": ("STRING", {"default": llm.OPENAI_URL}),
             },
         }
 
@@ -236,7 +237,7 @@ class H3PromptRewrite:
     CATEGORY = CATEGORY
 
     def rewrite(self, idea, task, duration_seconds, aspect_ratio, dialogue_language, style,
-                backend, model, temperature, ollama_url="http://ollama:11434"):
+                backend, model, temperature, ollama_url="http://ollama:11434", llm_url=""):
         idea = (idea or "").strip()
         if not idea:
             raise ValueError("idea is empty")
@@ -244,7 +245,7 @@ class H3PromptRewrite:
                 f"Frame: {aspect_ratio}\nStyle: {style}\n"
                 f"Dialogue language: {dialogue_language}\n\nUser idea:\n{idea}")
         text = llm.chat(REWRITE_SYSTEM, user, backend=backend, model=model, temperature=temperature,
-                        seed=0, max_new_tokens=1500, ollama_url=ollama_url).strip()
+                        seed=0, max_new_tokens=1500, ollama_url=ollama_url, openai_url=llm_url).strip()
         if text.startswith("```"):
             text = text.strip("`").split("\n", 1)[-1].rsplit("```", 1)[0].strip()
         if "integrated_multimodal_description" not in text:

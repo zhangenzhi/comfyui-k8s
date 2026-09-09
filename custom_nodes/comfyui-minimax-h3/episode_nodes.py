@@ -67,16 +67,19 @@ class H3EpisodePlanner:
                             "default": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓。"}),
                 "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
                 "clips": ("INT", {"default": 6, "min": 3, "max": 8, "tooltip": "片段数（每段 8–15 s）"}),
-                "backend": (llm.BACKENDS, {"default": "local",
-                            "tooltip": "local = pod 自己的 GPU (transformers)；ollama = 集群 CPU 服务（慢）"}),
-                "model": ("STRING", {"default": llm.DEFAULT_LOCAL,
-                          "tooltip": f"local: /workspace/data/llm/<name>；ollama: 模型标签。已有: {', '.join(llm.local_models()) or '无'}"}),
+                "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND,
+                            "tooltip": "openai = HPC/云端 OpenAI 兼容接口(H3_LLM_URL)；ollama = 集群 CPU 服务（慢）；"
+                                       "local = 占用 pod 的 H100，仅调试用"}),
+                "model": ("STRING", {"default": llm.OPENAI_MODEL if llm.DEFAULT_BACKEND == "openai" else llm.DEFAULT_OLLAMA,
+                          "tooltip": "openai/ollama: 服务端模型名；local: /workspace/data/llm/<name>"}),
                 "temperature": ("FLOAT", {"default": 0.6, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**31 - 1, "control_after_generate": True}),
             },
             "optional": {
                 "system_prompt_path": ("STRING", {"default": "", "tooltip": "留空用内置 v2；可指向 PVC 上自定义的 md"}),
                 "ollama_url": ("STRING", {"default": os.environ.get("OLLAMA_URL", "http://ollama:11434")}),
+                "llm_url": ("STRING", {"default": llm.OPENAI_URL,
+                            "tooltip": "openai 后端的 /v1 地址，留空用 H3_LLM_URL"}),
             },
         }
 
@@ -87,13 +90,13 @@ class H3EpisodePlanner:
     OUTPUT_NODE = True
 
     def plan(self, request, episode, clips, backend, model, temperature, seed,
-             system_prompt_path="", ollama_url="http://ollama:11434"):
+             system_prompt_path="", ollama_url="http://ollama:11434", llm_url=""):
         system = _load_system_prompt(system_prompt_path)
         user = (f"请写第 {episode} 集，切成 {clips} 个片段。需求：{request.strip()}\n"
                 "先输出【剧本】，再输出【分镜计划JSON】和 JSON 本体。characters 里必须包含 shen 和 gu，"
                 "外形与声音描述照抄人物圣经。")
         text = llm.chat(system, user, backend=backend, model=model, temperature=temperature,
-                        seed=seed, max_new_tokens=6000, ollama_url=ollama_url)
+                        seed=seed, max_new_tokens=6000, ollama_url=ollama_url, openai_url=llm_url)
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001

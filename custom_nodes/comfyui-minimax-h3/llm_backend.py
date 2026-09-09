@@ -1,9 +1,11 @@
 """LLM backends for the drama nodes.
 
   ollama : the in-cluster Ollama service (CPU-only here, ~1.5 tok/s for 7B -> slow)
-  local  : transformers on the ComfyUI pod's own GPU (idle while H3 renders on the HPC).
-           Weights live on the PVC: <H3_LLM_DIR>/<model>  (default /workspace/data/llm).
-           Download once with:  fetch-llm Qwen/Qwen2.5-14B-Instruct
+  openai : any OpenAI-compatible chat endpoint (H3_LLM_URL / H3_LLM_MODEL / H3_LLM_KEY),
+           e.g. an LLM served on the HPC by minimax-h3/scripts/serve_llm.pbs, or a cloud API.
+  local  : transformers on the ComfyUI pod's own GPU. NOT the default: the user wants the
+           pod's H100 left alone; video and LLM work belong on the HPC (c30636g).
+           Weights: <H3_LLM_DIR>/<model> (fetch-llm Qwen/Qwen2.5-14B-Instruct).
 """
 import os
 import threading
@@ -13,7 +15,11 @@ import requests
 LLM_DIR = os.environ.get("H3_LLM_DIR", "/workspace/data/llm")
 DEFAULT_LOCAL = os.environ.get("H3_LOCAL_LLM", "Qwen2.5-14B-Instruct")
 DEFAULT_OLLAMA = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")
-BACKENDS = ["local", "ollama"]
+OPENAI_URL = os.environ.get("H3_LLM_URL", "")          # e.g. http://172.31.17.244:30011/v1
+OPENAI_MODEL = os.environ.get("H3_LLM_MODEL", "Qwen2.5-14B-Instruct")
+OPENAI_KEY = os.environ.get("H3_LLM_KEY", "EMPTY")
+DEFAULT_BACKEND = os.environ.get("H3_LLM_BACKEND", "openai" if OPENAI_URL else "ollama")
+BACKENDS = ["openai", "ollama", "local"]
 
 _lock = threading.Lock()
 _cache = {}  # model name -> (tokenizer, model)
@@ -55,8 +61,23 @@ def unload_local():
         pass
 
 
-def chat(system, user, backend="local", model="", temperature=0.6, seed=0,
-         max_new_tokens=6000, ollama_url="http://ollama:11434"):
+def chat(system, user, backend="openai", model="", temperature=0.6, seed=0,
+         max_new_tokens=6000, ollama_url="http://ollama:11434", openai_url=""):
+    if backend == "openai":
+        base = (openai_url or OPENAI_URL).rstrip("/")
+        if not base:
+            raise RuntimeError("openai backend: set H3_LLM_URL (OpenAI-compatible /v1 endpoint, "
+                               "e.g. the HPC LLM server from minimax-h3/scripts/serve_llm.pbs) "
+                               "or fill the node's llm_url field")
+        r = requests.post(f"{base}/chat/completions", timeout=3600,
+                          headers={"Authorization": f"Bearer {OPENAI_KEY}"},
+                          json={"model": model or OPENAI_MODEL, "temperature": float(temperature),
+                                "max_tokens": int(max_new_tokens), "seed": int(seed),
+                                "messages": [{"role": "system", "content": system},
+                                             {"role": "user", "content": user}]})
+        if r.status_code >= 400:
+            raise RuntimeError(f"llm endpoint {r.status_code}: {r.text[:300]}")
+        return r.json()["choices"][0]["message"]["content"]
     if backend == "ollama":
         r = requests.post(f"{ollama_url.rstrip('/')}/api/chat", timeout=3600, json={
             "model": model or DEFAULT_OLLAMA, "stream": False,
