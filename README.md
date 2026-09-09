@@ -14,7 +14,7 @@ comfyui-k8s/
     ├── 00-pvc.yaml            # comfyui-pvc (300Gi, RWO) -> /workspace/data
     ├── 10-deployment.yaml     # Deployment + ClusterIP svc + NodePort svc
     ├── 20-model-fetch-job.yaml# 批量下载模型到 PVC 的 Job
-    └── 30-public-tls.yaml     # nginx TLS + Basic Auth + MetalLB LoadBalancer（可选）
+    └── 30-public-tls.yaml     # 公网入口说明：复用 ffformer 的 nginx，按 /test/comfyui/ 路径分发
 ```
 
 ## 0. 和 ffformer 的差异
@@ -78,18 +78,16 @@ kubectl -n $NS port-forward svc/comfyui-svc 8188:8188
 kubectl -n $NS get svc comfyui-nodeport      # 看 PORT(S) 里 8188:3xxxx，用 <任一节点IP>:3xxxx
 ```
 
-**公网 HTTPS（可选，`30-public-tls.yaml`）**
+**公网 HTTPS（已配置，走 ffformer 的入口按路径分发）**
 
-1. 向中心申请一个新的中间 IP（ffformer 的 172.31.229.16 不能复用），填进 `metallb.universe.tf/loadBalancerIPs`；
-   `server_name` 填申请到的域名。
-2. 创建证书和 Basic Auth 用户：
-   ```bash
-   openssl req -x509 -nodes -newkey rsa:2048 -days 365 -keyout tls.key -out tls.crt -subj "/CN=<hostname>"
-   kubectl -n $NS create secret tls comfyui-tls --cert=tls.crt --key=tls.key
-   htpasswd -Bc htpasswd <user>            # 没有 htpasswd 就: python3 -c "import bcrypt;print('<user>:'+bcrypt.hashpw(b'<pw>',bcrypt.gensalt()).decode())" > htpasswd
-   kubectl -n $NS create secret generic comfyui-htpasswd --from-file=htpasswd
-   ```
-3. `kubectl apply -f k8s/30-public-tls.yaml`，等 `comfyui-public` 的 EXTERNAL-IP 不再是 `<pending>`。
+```
+https://j-peaks-forestformer3d.hucc.hokudai.ac.jp/test/comfyui/
+```
+
+不需要新 IP / 端口 / 域名：`ffformer-tls` 的 nginx 里加了 `location /test/comfyui/`，去掉前缀后转给
+`comfyui-svc:8188`，并做 Basic Auth（用户名密码在登录节点 `~/.comfyui-basic-auth`）。
+配置来源是 `ffformer/deploy/k8s-https.yaml`，改完要 `kubectl apply` 再 `rollout restart deploy/ffformer-tls`。
+加用户 / 改密码见 `k8s/30-public-tls.yaml` 里的说明。公网 IP 只放行校园网段，超算登录节点连不上，属正常。
 
 ## 4. 放模型
 
