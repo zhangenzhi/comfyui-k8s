@@ -1,0 +1,22 @@
+# Pre-pull the latest image on the ComfyUI node (no GPU, no downtime) before a rollout restart:
+#   kubectl delete job comfyui-prepull -n c30636-default --ignore-not-found; kubectl apply -f k8s/90-prepull-job.yaml
+#   kubectl wait --for=condition=complete job/comfyui-prepull -n c30636-default --timeout=40m
+#   kubectl rollout restart deploy/comfyui -n c30636-default   # now pulls nothing
+apiVersion: batch/v1
+kind: Job
+metadata: {name: comfyui-prepull, namespace: c30636-default}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      nodeName: cworker14
+      restartPolicy: Never
+      securityContext: {runAsNonRoot: true, runAsUser: 1000, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: prepull
+          image: ghcr.io/zhangenzhi/comfyui:latest
+          imagePullPolicy: Always
+          command: ["sh", "-c", "cat /opt/COMFYUI_VERSION; grep -c keep-local /opt/entrypoint.sh; ls /opt/seed/custom_nodes/comfyui-minimax-h3/"]
+          securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}}
+          resources: {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 500m, memory: 256Mi}}

@@ -55,7 +55,7 @@ def _wrap_zh(text, width=14):
     text = text.strip()
     if len(text) <= width:
         return text
-    punct = "，。？！；：、"
+    punct = "，。？！；：、》」”）"   # closing marks must not start a line
     out, cur = [], ""
     for i, ch in enumerate(text):
         cur += ch
