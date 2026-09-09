@@ -51,7 +51,8 @@ RUN pip install paramiko requests
 
 COPY --chown=comfy:comfy entrypoint.sh /opt/entrypoint.sh
 COPY --chown=comfy:comfy fetch-model.sh /usr/local/bin/fetch-model
-RUN chmod +x /opt/entrypoint.sh /usr/local/bin/fetch-model
+COPY --chown=comfy:comfy fetch-llm.sh /usr/local/bin/fetch-llm
+RUN chmod +x /opt/entrypoint.sh /usr/local/bin/fetch-model /usr/local/bin/fetch-llm
 
 USER comfy
 ENV HOME=/home/comfy \

@@ -7,6 +7,7 @@ on:
       - 'Dockerfile'
       - 'entrypoint.sh'
       - 'fetch-model.sh'
+      - 'fetch-llm.sh'
       - 'custom_nodes/**'
       - '.github/workflows/docker-publish.yml'
   workflow_dispatch:

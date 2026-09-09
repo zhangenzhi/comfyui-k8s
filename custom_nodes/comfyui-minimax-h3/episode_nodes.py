@@ -11,6 +11,7 @@ import requests
 import folder_paths
 
 from . import bible
+from . import llm_backend as llm
 
 CATEGORY = "MiniMax-H3 (HPC)/drama"
 PLANNER_SYSTEM_PATH = os.path.join(os.path.dirname(__file__), "drama_system_prompt.md")
@@ -66,7 +67,10 @@ class H3EpisodePlanner:
                             "default": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓。"}),
                 "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
                 "clips": ("INT", {"default": 6, "min": 3, "max": 8, "tooltip": "片段数（每段 8–15 s）"}),
-                "model": ("STRING", {"default": os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")}),
+                "backend": (llm.BACKENDS, {"default": "local",
+                            "tooltip": "local = pod 自己的 GPU (transformers)；ollama = 集群 CPU 服务（慢）"}),
+                "model": ("STRING", {"default": llm.DEFAULT_LOCAL,
+                          "tooltip": f"local: /workspace/data/llm/<name>；ollama: 模型标签。已有: {', '.join(llm.local_models()) or '无'}"}),
                 "temperature": ("FLOAT", {"default": 0.6, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**31 - 1, "control_after_generate": True}),
             },
@@ -82,21 +86,14 @@ class H3EpisodePlanner:
     CATEGORY = CATEGORY
     OUTPUT_NODE = True
 
-    def plan(self, request, episode, clips, model, temperature, seed,
+    def plan(self, request, episode, clips, backend, model, temperature, seed,
              system_prompt_path="", ollama_url="http://ollama:11434"):
         system = _load_system_prompt(system_prompt_path)
         user = (f"请写第 {episode} 集，切成 {clips} 个片段。需求：{request.strip()}\n"
                 "先输出【剧本】，再输出【分镜计划JSON】和 JSON 本体。characters 里必须包含 shen 和 gu，"
                 "外形与声音描述照抄人物圣经。")
-        r = requests.post(f"{ollama_url.rstrip('/')}/api/chat", timeout=1800, json={
-            "model": model, "stream": False,
-            "options": {"temperature": float(temperature), "num_ctx": 16384, "num_predict": 6000,
-                        "seed": int(seed)},
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-        })
-        if r.status_code >= 400:
-            raise RuntimeError(f"ollama {r.status_code}: {r.text[:300]}")
-        text = r.json().get("message", {}).get("content", "")
+        text = llm.chat(system, user, backend=backend, model=model, temperature=temperature,
+                        seed=seed, max_new_tokens=6000, ollama_url=ollama_url)
         try:
             plan = _extract_json(text)
         except Exception as e:  # noqa: BLE001

@@ -13,6 +13,7 @@ import comfy.utils
 import comfy.model_management as mm
 
 from . import h3_client as h3
+from . import llm_backend as llm
 
 CATEGORY = "MiniMax-H3 (HPC)"
 ASPECTS = ["16:9", "9:16", "1:1", "4:3", "3:4", "auto"]
@@ -220,7 +221,8 @@ class H3PromptRewrite:
                 "aspect_ratio": (ASPECTS, {"default": "16:9"}),
                 "dialogue_language": (["Chinese", "English", "Japanese", "none"], {"default": "Chinese"}),
                 "style": ("STRING", {"default": "Live-action, cinematic"}),
-                "model": ("STRING", {"default": os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")}),
+                "backend": (llm.BACKENDS, {"default": "local"}),
+                "model": ("STRING", {"default": llm.DEFAULT_LOCAL}),
                 "temperature": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 2.0, "step": 0.05}),
             },
             "optional": {
@@ -234,22 +236,15 @@ class H3PromptRewrite:
     CATEGORY = CATEGORY
 
     def rewrite(self, idea, task, duration_seconds, aspect_ratio, dialogue_language, style,
-                model, temperature, ollama_url="http://ollama:11434"):
+                backend, model, temperature, ollama_url="http://ollama:11434"):
         idea = (idea or "").strip()
         if not idea:
             raise ValueError("idea is empty")
         user = (f"Task: {task}\nTotal duration: {duration_seconds:.2f} seconds\n"
                 f"Frame: {aspect_ratio}\nStyle: {style}\n"
                 f"Dialogue language: {dialogue_language}\n\nUser idea:\n{idea}")
-        r = requests.post(f"{ollama_url.rstrip('/')}/api/chat", timeout=600, json={
-            "model": model, "stream": False,
-            "options": {"temperature": float(temperature), "num_ctx": 8192},
-            "messages": [{"role": "system", "content": REWRITE_SYSTEM},
-                         {"role": "user", "content": user}],
-        })
-        if r.status_code >= 400:
-            raise RuntimeError(f"ollama {r.status_code}: {r.text[:300]}")
-        text = r.json().get("message", {}).get("content", "").strip()
+        text = llm.chat(REWRITE_SYSTEM, user, backend=backend, model=model, temperature=temperature,
+                        seed=0, max_new_tokens=1500, ollama_url=ollama_url).strip()
         if text.startswith("```"):
             text = text.strip("`").split("\n", 1)[-1].rsplit("```", 1)[0].strip()
         if "integrated_multimodal_description" not in text:
