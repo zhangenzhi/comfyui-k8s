@@ -133,6 +133,16 @@ def _asr_srt(video_path, plan_srt, mode="hybrid", model_name=None):
     res = model.transcribe(video_path, language="zh", task="transcribe", fp16=True,
                            condition_on_previous_text=False, no_speech_threshold=0.5)
     segs = [x for x in res.get("segments", []) if x.get("text", "").strip()]
+    # merge fragments: join segments separated by < 0.35 s, drop leftovers shorter than 0.4 s / 2 chars
+    merged = []
+    for x in segs:
+        t = x["text"].strip().replace(" ", "")
+        if merged and float(x["start"]) - float(merged[-1]["end"]) < 0.35 and len(merged[-1]["text"]) < 16:
+            merged[-1]["text"] += t
+            merged[-1]["end"] = float(x["end"])
+        else:
+            merged.append({"start": float(x["start"]), "end": float(x["end"]), "text": t})
+    segs = [x for x in merged if (x["end"] - x["start"]) >= 0.4 and len(x["text"]) >= 2]
     if not segs:
         return ""            # nothing spoken -> no subtitles
     planned = []
@@ -142,11 +152,14 @@ def _asr_srt(video_path, plan_srt, mode="hybrid", model_name=None):
             planned.append("".join(lines[2:]).replace("\n", ""))
     out, used = [], set()
     for i, sg in enumerate(segs, 1):
-        text = sg["text"].strip().replace(" ", "")
+        text = sg["text"]
         if mode == "hybrid" and planned:
             best, score = None, 0.0
             for j, pl in enumerate(planned):
                 r = difflib.SequenceMatcher(None, pl, text).ratio()
+                # a short ASR fragment that is contained in a planned line counts as a match
+                if len(text) >= 2 and text in pl:
+                    r = max(r, 0.6)
                 if r > score:
                     best, score = j, r
             if best is not None and score >= 0.45:
@@ -381,9 +394,9 @@ class H3ClipPromptBuilder:
                     seg.append(f"The camera {cam}.")
             parts.append(" ".join(seg))
 
-        parts.append("No subtitles, captions, lettering, signage or logos appear anywhere in the frame; "
-                     "any documents or screens are out of focus.")
-        body = ("integrated_multimodal_description: " + " ".join(parts) + "\n\n"
+        anti = ("The video contains no subtitles, no captions, no on-screen text of any kind; "
+                "nothing is written on the screen and no lettering, signage or logos are legible.")
+        body = ("integrated_multimodal_description: " + anti + " " + " ".join(parts) + "\n\n"
                 f"overall_soundscape: {clip.get('soundscape_en', 'Low room tone.')}\n\n"
                 f"non_diegetic_music: {clip.get('music_en', 'Sparse piano notes at a slow tempo.')}")
         if task == "fl2va":
