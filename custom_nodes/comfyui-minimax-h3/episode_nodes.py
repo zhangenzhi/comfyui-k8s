@@ -313,7 +313,9 @@ class H3ClipPromptBuilder:
         if task == "auto":
             task = "fl2va" if chain else "t2va"
         chars = {**bible.characters(), **plan.get("characters", {})}
-        style = plan.get("style_en", bible.style())
+        # The live bible wins over whatever style the planner wrote into the JSON, unless the
+        # plan explicitly sets style_override (lets the style be tuned without re-planning).
+        style = plan.get("style_override") or bible.style()
         duration = float(clip.get("duration", 10))
         shots = clip.get("shots", [])
         if not shots:
