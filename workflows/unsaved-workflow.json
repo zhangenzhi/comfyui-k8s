@@ -1,6 +1,6 @@
 {
- "last_node_id": 22,
- "last_link_id": 65,
+ "last_node_id": 20,
+ "last_link_id": 47,
  "nodes": [
   {
    "id": 1,
@@ -142,8 +142,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      37,
-      55
+      37
      ],
      "slot_index": 2
     },
@@ -246,8 +245,7 @@
      "type": "STRING",
      "links": [
       7,
-      36,
-      48
+      36
      ],
      "slot_index": 1
     },
@@ -323,8 +321,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      39,
-      57
+      39
      ],
      "slot_index": 2
     },
@@ -465,8 +462,7 @@
      "type": "STRING",
      "links": [
       13,
-      38,
-      49
+      38
      ],
      "slot_index": 1
     },
@@ -542,8 +538,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      41,
-      59
+      41
      ],
      "slot_index": 2
     },
@@ -684,8 +679,7 @@
      "type": "STRING",
      "links": [
       19,
-      40,
-      50
+      40
      ],
      "slot_index": 1
     },
@@ -761,8 +755,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      43,
-      61
+      43
      ],
      "slot_index": 2
     },
@@ -903,8 +896,7 @@
      "type": "STRING",
      "links": [
       25,
-      42,
-      51
+      42
      ],
      "slot_index": 1
     },
@@ -980,8 +972,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      45,
-      63
+      45
      ],
      "slot_index": 2
     },
@@ -1122,8 +1113,7 @@
      "type": "STRING",
      "links": [
       31,
-      44,
-      52
+      44
      ],
      "slot_index": 1
     },
@@ -1199,8 +1189,7 @@
      "name": "subtitles_srt",
      "type": "STRING",
      "links": [
-      47,
-      65
+      47
      ],
      "slot_index": 2
     },
@@ -1340,8 +1329,7 @@
      "name": "video_path",
      "type": "STRING",
      "links": [
-      46,
-      53
+      46
      ],
      "slot_index": 1
     },
@@ -1377,7 +1365,7 @@
    "type": "MiniMaxH3_VideoConcat",
    "pos": [
     2120,
-    780
+    40
    ],
    "size": [
     420,
@@ -1529,347 +1517,6 @@
     "h3/ep01_90s/episode01_768p",
     true,
     44,
-    0.25,
-    "hybrid",
-    3,
-    "/workspace/data/fonts/NotoSansCJK-Regular.ttc"
-   ]
-  },
-  {
-   "id": 21,
-   "type": "MiniMaxH3_SeedVR2Upscale",
-   "pos": [
-    2120,
-    40
-   ],
-   "size": [
-    420,
-    700
-   ],
-   "flags": {},
-   "order": 20,
-   "mode": 0,
-   "inputs": [
-    {
-     "name": "clip_1",
-     "type": "STRING",
-     "link": 48
-    },
-    {
-     "name": "clip_2",
-     "type": "STRING",
-     "link": 49
-    },
-    {
-     "name": "clip_3",
-     "type": "STRING",
-     "link": 50
-    },
-    {
-     "name": "clip_4",
-     "type": "STRING",
-     "link": 51
-    },
-    {
-     "name": "clip_5",
-     "type": "STRING",
-     "link": 52
-    },
-    {
-     "name": "clip_6",
-     "type": "STRING",
-     "link": 53
-    },
-    {
-     "name": "clip_7",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_8",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_9",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_10",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_11",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_12",
-     "type": "STRING",
-     "link": null
-    }
-   ],
-   "outputs": [
-    {
-     "name": "up_1",
-     "type": "STRING",
-     "links": [
-      54
-     ],
-     "slot_index": 0
-    },
-    {
-     "name": "up_2",
-     "type": "STRING",
-     "links": [
-      56
-     ],
-     "slot_index": 1
-    },
-    {
-     "name": "up_3",
-     "type": "STRING",
-     "links": [
-      58
-     ],
-     "slot_index": 2
-    },
-    {
-     "name": "up_4",
-     "type": "STRING",
-     "links": [
-      60
-     ],
-     "slot_index": 3
-    },
-    {
-     "name": "up_5",
-     "type": "STRING",
-     "links": [
-      62
-     ],
-     "slot_index": 4
-    },
-    {
-     "name": "up_6",
-     "type": "STRING",
-     "links": [
-      64
-     ],
-     "slot_index": 5
-    },
-    {
-     "name": "up_7",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 6
-    },
-    {
-     "name": "up_8",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 7
-    },
-    {
-     "name": "up_9",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 8
-    },
-    {
-     "name": "up_10",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 9
-    },
-    {
-     "name": "up_11",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 10
-    },
-    {
-     "name": "up_12",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 11
-    },
-    {
-     "name": "report",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 12
-    }
-   ],
-   "properties": {
-    "Node name for S&R": "MiniMaxH3_SeedVR2Upscale"
-   },
-   "widgets_values": [
-    1440,
-    33,
-    10800,
-    "h3/ep01_90s/2k/clip"
-   ]
-  },
-  {
-   "id": 22,
-   "type": "MiniMaxH3_VideoConcat",
-   "pos": [
-    2640,
-    40
-   ],
-   "size": [
-    420,
-    1300
-   ],
-   "flags": {},
-   "order": 21,
-   "mode": 0,
-   "inputs": [
-    {
-     "name": "clip_1",
-     "type": "STRING",
-     "link": 54
-    },
-    {
-     "name": "srt_1",
-     "type": "STRING",
-     "link": 55
-    },
-    {
-     "name": "clip_2",
-     "type": "STRING",
-     "link": 56
-    },
-    {
-     "name": "srt_2",
-     "type": "STRING",
-     "link": 57
-    },
-    {
-     "name": "clip_3",
-     "type": "STRING",
-     "link": 58
-    },
-    {
-     "name": "srt_3",
-     "type": "STRING",
-     "link": 59
-    },
-    {
-     "name": "clip_4",
-     "type": "STRING",
-     "link": 60
-    },
-    {
-     "name": "srt_4",
-     "type": "STRING",
-     "link": 61
-    },
-    {
-     "name": "clip_5",
-     "type": "STRING",
-     "link": 62
-    },
-    {
-     "name": "srt_5",
-     "type": "STRING",
-     "link": 63
-    },
-    {
-     "name": "clip_6",
-     "type": "STRING",
-     "link": 64
-    },
-    {
-     "name": "srt_6",
-     "type": "STRING",
-     "link": 65
-    },
-    {
-     "name": "clip_7",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_7",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_8",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_8",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_9",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_9",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_10",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_10",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_11",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_11",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "clip_12",
-     "type": "STRING",
-     "link": null
-    },
-    {
-     "name": "srt_12",
-     "type": "STRING",
-     "link": null
-    }
-   ],
-   "outputs": [
-    {
-     "name": "video",
-     "type": "VIDEO",
-     "links": [],
-     "slot_index": 0
-    },
-    {
-     "name": "video_path",
-     "type": "STRING",
-     "links": [],
-     "slot_index": 1
-    }
-   ],
-   "properties": {
-    "Node name for S&R": "MiniMaxH3_VideoConcat"
-   },
-   "widgets_values": [
-    "h3/ep01_90s/episode01_2k",
-    true,
-    80,
     0.25,
     "hybrid",
     3,
@@ -2251,150 +1898,6 @@
    17,
    2,
    20,
-   11,
-   "STRING"
-  ],
-  [
-   48,
-   4,
-   1,
-   21,
-   0,
-   "STRING"
-  ],
-  [
-   49,
-   7,
-   1,
-   21,
-   1,
-   "STRING"
-  ],
-  [
-   50,
-   10,
-   1,
-   21,
-   2,
-   "STRING"
-  ],
-  [
-   51,
-   13,
-   1,
-   21,
-   3,
-   "STRING"
-  ],
-  [
-   52,
-   16,
-   1,
-   21,
-   4,
-   "STRING"
-  ],
-  [
-   53,
-   19,
-   1,
-   21,
-   5,
-   "STRING"
-  ],
-  [
-   54,
-   21,
-   0,
-   22,
-   0,
-   "STRING"
-  ],
-  [
-   55,
-   3,
-   2,
-   22,
-   1,
-   "STRING"
-  ],
-  [
-   56,
-   21,
-   1,
-   22,
-   2,
-   "STRING"
-  ],
-  [
-   57,
-   5,
-   2,
-   22,
-   3,
-   "STRING"
-  ],
-  [
-   58,
-   21,
-   2,
-   22,
-   4,
-   "STRING"
-  ],
-  [
-   59,
-   8,
-   2,
-   22,
-   5,
-   "STRING"
-  ],
-  [
-   60,
-   21,
-   3,
-   22,
-   6,
-   "STRING"
-  ],
-  [
-   61,
-   11,
-   2,
-   22,
-   7,
-   "STRING"
-  ],
-  [
-   62,
-   21,
-   4,
-   22,
-   8,
-   "STRING"
-  ],
-  [
-   63,
-   14,
-   2,
-   22,
-   9,
-   "STRING"
-  ],
-  [
-   64,
-   21,
-   5,
-   22,
-   10,
-   "STRING"
-  ],
-  [
-   65,
-   17,
-   2,
-   22,
    11,
    "STRING"
   ]
