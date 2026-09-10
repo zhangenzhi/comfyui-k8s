@@ -117,56 +117,127 @@ def _wrap_zh(text, width=14):
 
 
 _WHISPER = {}
+_PUNCT = set("，。？！；：、,.?!;:…—“”\"'‘’（）()《》<>[] \t\n")
 
 
-def _asr_srt(video_path, plan_srt, mode="hybrid", model_name=None):
-    """Re-time subtitles from the clip's actual speech with Whisper.
-    hybrid: ASR timing, text = best-matching planned line when similar enough, else ASR text.
-    asr:    ASR timing and text."""
-    import difflib
+def _whisper_model(name=None):
     import whisper
-    name = model_name or os.environ.get("H3_WHISPER_MODEL", "large-v3-turbo")
+    name = name or os.environ.get("H3_WHISPER_MODEL", "large-v3-turbo")
     if name not in _WHISPER:
         _WHISPER.clear()
         _WHISPER[name] = whisper.load_model(name, download_root="/workspace/data/models/whisper")
-    model = _WHISPER[name]
-    res = model.transcribe(video_path, language="zh", task="transcribe", fp16=True,
-                           condition_on_previous_text=False, no_speech_threshold=0.5)
-    segs = [x for x in res.get("segments", []) if x.get("text", "").strip()]
-    # merge fragments: join segments separated by < 0.35 s, drop leftovers shorter than 0.4 s / 2 chars
-    merged = []
-    for x in segs:
-        t = x["text"].strip().replace(" ", "")
-        if merged and float(x["start"]) - float(merged[-1]["end"]) < 0.35 and len(merged[-1]["text"]) < 16:
-            merged[-1]["text"] += t
-            merged[-1]["end"] = float(x["end"])
-        else:
-            merged.append({"start": float(x["start"]), "end": float(x["end"]), "text": t})
-    segs = [x for x in merged if (x["end"] - x["start"]) >= 0.4 and len(x["text"]) >= 2]
-    if not segs:
-        return ""            # nothing spoken -> no subtitles
-    planned = []
+    return _WHISPER[name]
+
+
+def _asr_chars(video_path):
+    """Character-level timestamps from Whisper word timestamps (Chinese words are 1–3 chars;
+    timestamps are spread evenly inside a word). Returns list of (char, start, end)."""
+    res = _whisper_model().transcribe(video_path, language="zh", task="transcribe", fp16=True,
+                                      word_timestamps=True, condition_on_previous_text=False,
+                                      no_speech_threshold=0.5)
+    chars = []
+    for seg in res.get("segments", []):
+        for w in seg.get("words", []) or []:
+            txt = [c for c in w.get("word", "") if c not in _PUNCT]
+            if not txt:
+                continue
+            ws, we = float(w["start"]), float(w["end"])
+            step = (we - ws) / len(txt)
+            for k, c in enumerate(txt):
+                chars.append((c, ws + k * step, ws + (k + 1) * step))
+    return chars, res
+
+
+def _plan_lines(plan_srt):
+    lines = []
     for block in plan_srt.strip().split("\n\n"):
-        lines = block.strip().splitlines()
-        if len(lines) >= 3:
-            planned.append("".join(lines[2:]).replace("\n", ""))
-    out, used = [], set()
-    for i, sg in enumerate(segs, 1):
-        text = sg["text"]
-        if mode == "hybrid" and planned:
-            best, score = None, 0.0
-            for j, pl in enumerate(planned):
-                r = difflib.SequenceMatcher(None, pl, text).ratio()
-                # a short ASR fragment that is contained in a planned line counts as a match
-                if len(text) >= 2 and text in pl:
-                    r = max(r, 0.6)
-                if r > score:
-                    best, score = j, r
-            if best is not None and score >= 0.45:
-                text = planned[best]
-                used.add(best)
-        out.append(f"{i}\n{_srt_ts(float(sg['start']))} --> {_srt_ts(float(sg['end']))}\n{_wrap_zh(text)}\n")
+        ls = block.strip().splitlines()
+        if len(ls) >= 3:
+            lines.append("".join(ls[2:]).replace("\n", ""))
+    return lines
+
+
+def _forced_align_srt(video_path, plan_srt):
+    """Ground-truth text from the plan, timing from the audio:
+    Levenshtein-style alignment (SequenceMatcher) of the planned character sequence against
+    the ASR character sequence with per-character timestamps."""
+    import difflib
+    chars, res = _asr_chars(video_path)
+    lines = _plan_lines(plan_srt)
+    if not chars:
+        return ""
+    if not lines:
+        return _segments_srt(res)
+    # planned character stream with line ids
+    pchars, pline = [], []
+    for li, line in enumerate(lines):
+        for c in line:
+            if c not in _PUNCT:
+                pchars.append(c); pline.append(li)
+    achars = [c for c, _, _ in chars]
+    sm = difflib.SequenceMatcher(None, pchars, achars, autojunk=False)
+    hit = {}                       # plan char index -> (start, end)
+    for a, b, n in sm.get_matching_blocks():
+        for k in range(n):
+            hit[a + k] = (chars[b + k][1], chars[b + k][2])
+    out, n_out = [], 0
+    spans = {}
+    for i, li in enumerate(pline):
+        if i in hit:
+            st, en = hit[i]
+            s0, e0, cnt = spans.get(li, (st, en, 0))
+            spans[li] = (min(s0, st), max(e0, en), cnt + 1)
+    total = {li: pline.count(li) for li in set(pline)}
+    unmatched_lines = []
+    for li, line in enumerate(lines):
+        if li in spans and spans[li][2] >= max(2, 0.5 * total.get(li, 1)):
+            st, en, _ = spans[li]
+            en = max(en + 0.15, st + 0.8)
+            n_out += 1
+            out.append((st, en, line))
+        else:
+            unmatched_lines.append(li)
+    # lines H3 did not say (or changed beyond recognition): fall back to ASR text in those gaps
+    if unmatched_lines:
+        used = set(b for a, b, n in sm.get_matching_blocks() for b in range(b, b + n))
+        leftover = [(c, st, en) for k, (c, st, en) in enumerate(chars) if k not in used]
+        if leftover:
+            # group leftover chars into runs separated by > 0.6 s
+            run = [leftover[0]]
+            runs = []
+            for item in leftover[1:]:
+                if item[1] - run[-1][2] > 0.6:
+                    runs.append(run); run = [item]
+                else:
+                    run.append(item)
+            runs.append(run)
+            for r in runs:
+                txt = "".join(c for c, _, _ in r)
+                if len(txt) >= 2 and (r[-1][2] - r[0][1]) >= 0.4:
+                    out.append((r[0][1], max(r[-1][2] + 0.15, r[0][1] + 0.8), txt))
+    out.sort(key=lambda x: x[0])
+    # avoid overlaps
+    for i in range(1, len(out)):
+        if out[i][0] < out[i - 1][1]:
+            out[i - 1] = (out[i - 1][0], max(out[i - 1][0] + 0.3, out[i][0] - 0.05), out[i - 1][2])
+    print(f"[H3 subtitles] {n_out}/{len(lines)} planned lines aligned to audio, {len(out) - n_out} ASR fallbacks")
+    return "\n".join(f"{i}\n{_srt_ts(a)} --> {_srt_ts(b)}\n{_wrap_zh(t)}\n" for i, (a, b, t) in enumerate(out, 1))
+
+
+def _segments_srt(res):
+    out = []
+    for i, sg in enumerate([x for x in res.get("segments", []) if x.get("text", "").strip()], 1):
+        out.append(f"{i}\n{_srt_ts(float(sg['start']))} --> {_srt_ts(float(sg['end']))}\n{_wrap_zh(sg['text'].strip().replace(' ', ''))}\n")
     return "\n".join(out)
+
+
+def _asr_srt(video_path, plan_srt, mode="aligned", model_name=None):
+    """aligned/hybrid: forced alignment of the planned lines to the audio (text = ground truth).
+    asr: Whisper segments as-is (text and timing from ASR)."""
+    if mode == "asr":
+        _, res = _asr_chars(video_path)
+        return _segments_srt(res)
+    return _forced_align_srt(video_path, plan_srt)
 
 
 def _shift_srt(srt, delta):
@@ -428,8 +499,8 @@ class H3VideoConcat:
                                   "tooltip": "字幕字高（视频像素）。768x1344 用 44，2K 用 80 左右"}),
                     "crossfade_s": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.05,
                                     "tooltip": "crossfade seconds; 0 = hard cut"}),
-                    "subtitle_source": (["hybrid", "asr", "plan"], {"default": "hybrid",
-                                        "tooltip": "hybrid: Whisper 识别实际语音的时间，文本优先用分镜原句；asr: 全用识别结果；plan: 按分镜估算（旧行为）"}),
+                    "subtitle_source": (["aligned", "asr", "plan"], {"default": "aligned",
+                                        "tooltip": "aligned: 台词文本以分镜为准，时间戳由 Whisper 字级时间戳强制对齐到音轨；asr: 全用识别结果；plan: 按分镜估算"}),
                     "trim_head_frames": ("INT", {"default": 3, "min": 0, "max": 24,
                                          "tooltip": "drop the first N frames of clips 2..n: a chained clip's first frame duplicates the previous last frame"}),
                 },
@@ -441,7 +512,7 @@ class H3VideoConcat:
     CATEGORY = CATEGORY
     OUTPUT_NODE = True
 
-    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, subtitle_source="hybrid",
+    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, subtitle_source="aligned",
                trim_head_frames=3, font_file="", **kw):
         clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 13)]
         clips = [(p, s) for p, s in clips if p]
