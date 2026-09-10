@@ -219,9 +219,9 @@ class H3EpisodePlanner:
         plan.setdefault("episode", episode)
         # Force the bible in, whatever the model wrote.
         chars = plan.setdefault("characters", {})
-        for cid, c in bible.CHARACTERS.items():
+        for cid, c in bible.characters().items():
             chars.setdefault(cid, {}).update(c)
-        plan.setdefault("style_en", bible.STYLE_EN)
+        plan.setdefault("style_en", bible.style())
         plan.setdefault("aspect_ratio", "9:16")
         script = text[:text.find("【分镜计划JSON】")].strip() if "【分镜计划JSON】" in text else text
         pj = json.dumps(plan, ensure_ascii=False, indent=1)
@@ -272,8 +272,8 @@ class H3ClipPromptBuilder:
             chain = bool(cfp)
         if task == "auto":
             task = "fl2va" if chain else "t2va"
-        chars = {**bible.CHARACTERS, **plan.get("characters", {})}
-        style = plan.get("style_en", bible.STYLE_EN)
+        chars = {**bible.characters(), **plan.get("characters", {})}
+        style = plan.get("style_en", bible.style())
         duration = float(clip.get("duration", 10))
         shots = clip.get("shots", [])
         if not shots:
