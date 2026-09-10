@@ -104,3 +104,41 @@ def chat(system, user, backend="openai", model="", temperature=0.6, seed=0,
     with torch.inference_mode():
         out = mdl.generate(**enc, **gen)
     return tok.decode(out[0, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+
+
+# ── vLLM sidecar launcher (also invoked from the image entrypoint; this copy lives on the
+#    PVC so it works without an image rebuild). Idempotent: skips if the port already answers.
+def ensure_sidecar():
+    import socket
+    import subprocess
+    if os.environ.get("H3_LLM_SIDECAR", "0") != "1":
+        return
+    base = "/workspace/data"
+    exe = os.path.join(base, "venvs", "vllm", "bin", "vllm")
+    port = int(os.environ.get("H3_LLM_PORT", "8001"))
+    model = os.environ.get("H3_LLM_MODEL", "Qwen2.5-72B-Instruct-AWQ")
+    mdir = os.path.join(os.environ.get("H3_LLM_DIR", os.path.join(base, "llm")), model)
+    if not (os.path.exists(exe) and os.path.exists(os.path.join(mdir, "config.json"))):
+        print(f"[MiniMax-H3] LLM sidecar not started: missing {exe} or {mdir}")
+        return
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=1):
+            print(f"[MiniMax-H3] LLM sidecar already listening on {port}")
+            return
+    except OSError:
+        pass
+    log = open(os.path.join(base, "venvs", "vllm_serve.log"), "ab")
+    cmd = [exe, "serve", mdir, "--served-model-name", model, "--host", "127.0.0.1", "--port", str(port),
+           "--gpu-memory-utilization", os.environ.get("H3_LLM_GPU_FRAC", "0.55"),
+           "--max-model-len", os.environ.get("H3_LLM_CTX", "24576"), "--max-num-seqs", "4",
+           "--quantization", "awq_marlin", "--dtype", "float16"]
+    env = dict(os.environ)
+    env.pop("PYTHONUSERBASE", None); env.pop("PIP_USER", None); env.pop("PYTHONPATH", None)
+    subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
+    print(f"[MiniMax-H3] LLM sidecar starting: {model} on 127.0.0.1:{port} (log: venvs/vllm_serve.log)")
+
+
+try:
+    ensure_sidecar()
+except Exception as _e:  # noqa: BLE001
+    print(f"[MiniMax-H3] LLM sidecar launch failed: {_e}")
