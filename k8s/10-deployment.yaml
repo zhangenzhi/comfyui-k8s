@@ -36,7 +36,8 @@ spec:
       containers:
         - name: comfyui
           # Pinned by digest so restarts never pull; bump deliberately after a new build (README §更新).
-          image: ghcr.io/zhangenzhi/comfyui@sha256:b346d8fd2708dfb6ae8dfb43fd1ea6fd83442966445ac367fa55333af5faffd8
+          # = commit b69a7fb (latest nodes, whisper baked in). Pre-pull with k8s/90-prepull-job.yaml before applying.
+          image: ghcr.io/zhangenzhi/comfyui@sha256:513dc48e30c01db956e73b26c76bece5b196fab37caa2e59d18ff121d9acd9c8
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
