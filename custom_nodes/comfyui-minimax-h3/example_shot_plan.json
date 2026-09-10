@@ -2,12 +2,12 @@
  "episode": 1,
  "title": "深夜实验室，魔鬼导师撕了我的论文",
  "aspect_ratio": "9:16",
- "style_en": "Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame",
+ "style_en": "Live-action, documentary-style realism: handheld camera, natural colours with no colour grading, slight film grain; the room is lit only by practical light sources (a desk lamp, the white glow of a computer monitor, a microscope's stage light) with the overhead fluorescent tubes switched off; a real, cluttered university laboratory with labelled bottles, pipette racks and paper on the benches; in a vertical 9:16 frame",
  "clips": [
   {
    "index": 1,
    "duration": 12.0,
-   "location_en": "a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor",
+   "location_en": "a real university biology laboratory at two in the morning, overhead lights off, lit by a desk lamp, a monitor's glow and the microscope stage light, benches cluttered with labelled bottles and pipette racks",
    "shots": [
     {
      "start": 0.0,

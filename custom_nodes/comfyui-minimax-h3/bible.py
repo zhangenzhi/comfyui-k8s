@@ -2,8 +2,7 @@
 Fixed English sentences are re-inserted verbatim in every clip so that H3 keeps
 faces and voices stable across independently generated clips."""
 
-STYLE_EN = ("Live-action, cinematic, cool blue-tinted night laboratory interior, "
-            "shallow depth of field, in a vertical 9:16 frame")
+STYLE_EN = ("Live-action, documentary-style realism: handheld camera, natural colours with no colour grading, slight film grain; the room is lit only by practical light sources (a desk lamp, the white glow of a computer monitor, a microscope's stage light) with the overhead fluorescent tubes switched off; a real, cluttered university laboratory with labelled bottles, pipette racks and paper on the benches; in a vertical 9:16 frame")
 
 CHARACTERS = {
     "shen": {

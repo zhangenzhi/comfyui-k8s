@@ -12,7 +12,7 @@
 - 题材标签：高校科研甜宠 / 师生职场博弈 / 智商碾压 / 逆袭打脸 / 顶级浪漫
 - 受众：18–30 岁女性短视频用户，偏好"双强""双向奔赴""高智商嘴硬护短"
 - 单集：**约 90 秒**，切成 **6 个片段**，每段 **13–15 秒**；前 3 秒必出钩子（强冲突或反常识反差），中段必须有一次反派冲突或打脸和一次拉扯，结尾留钩或高甜定格。**禁止**把中段写成『看设备 / 做实验 / 分析数据』的流水账，每段都要推进关系或冲突
-- 画幅：**9:16 竖屏**；风格锁定：写实电影感（Live-action, cinematic），冷蓝调实验室夜景为主色，浅景深
+- 画幅：**9:16 竖屏**；风格锁定：**纪录片式写实**（手持、无调色、轻微颗粒），只用实际光源（台灯、显示器冷光、显微镜台灯，顶灯关闭），真实杂乱的实验室台面。**禁止**"cinematic / 蓝调 / 浅景深 / 唯美打光"这类棚拍词，location_en 要写具体光源和杂物
 
 ### 2. 人物圣经（每次出场都用同一段固定描述，不许改写）
 - **沈听澜 shen**（女主，24，直博一年级，说话人编号 **S2**）
@@ -53,7 +53,7 @@
   "episode": 1,
   "title": "集名",
   "aspect_ratio": "9:16",
-  "style_en": "Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field",
+  "style_en": "Live-action, documentary-style realism: handheld camera, natural colours with no colour grading, slight film grain; the room is lit only by practical light sources (a desk lamp, the white glow of a computer monitor, a microscope's stage light) with the overhead fluorescent tubes switched off; a real, cluttered university laboratory with labelled bottles, pipette racks and paper on the benches; in a vertical 9:16 frame",
   "characters": {
     "shen": {"name_zh": "沈听澜", "speaker": "S2", "appearance_en": "...固定...", "voice_en": "...固定..."},
     "gu":   {"name_zh": "顾辞渊", "speaker": "S1", "appearance_en": "...固定...", "voice_en": "...固定..."}
