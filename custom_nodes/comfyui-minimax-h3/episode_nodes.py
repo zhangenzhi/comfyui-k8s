@@ -116,6 +116,46 @@ def _wrap_zh(text, width=14):
     return "\n".join(out[:3])   # at most 3 lines on screen
 
 
+_WHISPER = {}
+
+
+def _asr_srt(video_path, plan_srt, mode="hybrid", model_name=None):
+    """Re-time subtitles from the clip's actual speech with Whisper.
+    hybrid: ASR timing, text = best-matching planned line when similar enough, else ASR text.
+    asr:    ASR timing and text."""
+    import difflib
+    import whisper
+    name = model_name or os.environ.get("H3_WHISPER_MODEL", "large-v3-turbo")
+    if name not in _WHISPER:
+        _WHISPER.clear()
+        _WHISPER[name] = whisper.load_model(name, download_root="/workspace/data/models/whisper")
+    model = _WHISPER[name]
+    res = model.transcribe(video_path, language="zh", task="transcribe", fp16=True,
+                           condition_on_previous_text=False, no_speech_threshold=0.5)
+    segs = [x for x in res.get("segments", []) if x.get("text", "").strip()]
+    if not segs:
+        return ""            # nothing spoken -> no subtitles
+    planned = []
+    for block in plan_srt.strip().split("\n\n"):
+        lines = block.strip().splitlines()
+        if len(lines) >= 3:
+            planned.append("".join(lines[2:]).replace("\n", ""))
+    out, used = [], set()
+    for i, sg in enumerate(segs, 1):
+        text = sg["text"].strip().replace(" ", "")
+        if mode == "hybrid" and planned:
+            best, score = None, 0.0
+            for j, pl in enumerate(planned):
+                r = difflib.SequenceMatcher(None, pl, text).ratio()
+                if r > score:
+                    best, score = j, r
+            if best is not None and score >= 0.45:
+                text = planned[best]
+                used.add(best)
+        out.append(f"{i}\n{_srt_ts(float(sg['start']))} --> {_srt_ts(float(sg['end']))}\n{_wrap_zh(text)}\n")
+    return "\n".join(out)
+
+
 def _shift_srt(srt, delta):
     out = []
     for line in srt.splitlines():
@@ -339,6 +379,8 @@ class H3ClipPromptBuilder:
                     seg.append(f"The camera {cam}.")
             parts.append(" ".join(seg))
 
+        parts.append("No subtitles, captions, lettering, signage or logos appear anywhere in the frame; "
+                     "any documents or screens are out of focus.")
         body = ("integrated_multimodal_description: " + " ".join(parts) + "\n\n"
                 f"overall_soundscape: {clip.get('soundscape_en', 'Low room tone.')}\n\n"
                 f"non_diegetic_music: {clip.get('music_en', 'Sparse piano notes at a slow tempo.')}")
@@ -371,6 +413,8 @@ class H3VideoConcat:
                                   "tooltip": "字幕字高（视频像素）。768x1344 用 44，2K 用 80 左右"}),
                     "crossfade_s": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.05,
                                     "tooltip": "crossfade seconds; 0 = hard cut"}),
+                    "subtitle_source": (["hybrid", "asr", "plan"], {"default": "hybrid",
+                                        "tooltip": "hybrid: Whisper 识别实际语音的时间，文本优先用分镜原句；asr: 全用识别结果；plan: 按分镜估算（旧行为）"}),
                     "trim_head_frames": ("INT", {"default": 3, "min": 0, "max": 24,
                                          "tooltip": "drop the first N frames of clips 2..n: a chained clip's first frame duplicates the previous last frame"}),
                 },
@@ -382,7 +426,8 @@ class H3VideoConcat:
     CATEGORY = CATEGORY
     OUTPUT_NODE = True
 
-    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, trim_head_frames=3, font_file="", **kw):
+    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, subtitle_source="hybrid",
+               trim_head_frames=3, font_file="", **kw):
         clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 13)]
         clips = [(p, s) for p, s in clips if p]
         if not clips:
@@ -397,6 +442,11 @@ class H3VideoConcat:
                 out = os.path.join(work, f"c{i}.mp4")
                 vf = "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=24"
                 head = trim_head_frames if i > 1 else 0
+                if burn_subtitles and subtitle_source != "plan":
+                    try:
+                        srt = _asr_srt(p, srt, mode=subtitle_source)
+                    except Exception as e:  # noqa: BLE001
+                        print(f"[H3 concat] ASR subtitle alignment failed ({e}); falling back to plan timing")
                 if burn_subtitles and srt.strip():
                     if head:
                         srt = _shift_srt(srt, -head / 24.0)
