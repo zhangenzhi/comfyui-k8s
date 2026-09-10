@@ -127,7 +127,7 @@ def ensure_sidecar():
             return
     except OSError:
         pass
-    log = open(os.path.join(base, "venvs", "vllm_serve.log"), "ab")
+    log = open(os.path.join(base, "venvs", "vllm_serve.log"), "wb")   # fresh log per launch
     cmd = [exe, "serve", mdir, "--served-model-name", model, "--host", "127.0.0.1", "--port", str(port),
            "--gpu-memory-utilization", os.environ.get("H3_LLM_GPU_FRAC", "0.55"),
            "--max-model-len", os.environ.get("H3_LLM_CTX", "24576"), "--max-num-seqs", "4",
