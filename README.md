@@ -180,7 +180,7 @@ System Prompt v2（机器可读分镜版）在 `custom_nodes/comfyui-minimax-h3/
 | **H3 Video Concat + Subtitles** | ffmpeg 归一化、烧中文字幕（Noto Sans CJK）、硬切或交叉淡化拼接成整集（最多 12 段） |
 | **H3 Last Frame** | 取上一段 mp4 的末帧为 IMAGE，接到下一段 Generate 的 `first_frame`（fl2va 串接） |
 
-**一集 = 3 分钟 = 12 段 × 12–15 s**（v2 提示词与节点上限均按此设定）。**首末帧串接**：分镜 JSON 每段带 `continue_from_previous`，
+**一集 = 90 秒 = 6 段 × 13–15 s**（2026-09-10 决定；节点上限仍支持到 12 段）。**剧情 LLM = Qwen2.5-72B-Instruct-AWQ**，由 vLLM 侧车在 pod 的 H100 上提供（`H3_LLM_SIDECAR=1`，`127.0.0.1:8001/v1`，显存占比 0.55，ComfyUI 以 `--reserve-vram 45` 启动）；14B 只作应急。段间过渡：提示词开头带"从上一段最后一个镜头接续"的上下文句，拼接时串接段去头 3 帧并做 0.25 s 交叉淡化，每集至少 1 次换场景。**首末帧串接**：分镜 JSON 每段带 `continue_from_previous`，
 Builder 的 `chain` 输出接 Generate 的 `use_keyframes`；同一场景延续时 Generate 以上一段末帧为首帧走 fl2va（`task=auto`），
 换场景时自动退回 t2va。这样人物、站位、光线在同场景内保持一致。
 
