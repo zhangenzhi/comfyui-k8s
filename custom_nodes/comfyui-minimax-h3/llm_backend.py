@@ -128,12 +128,16 @@ def ensure_sidecar():
     except OSError:
         pass
     log = open(os.path.join(base, "venvs", "vllm_serve.log"), "wb")   # fresh log per launch
+    # Verified 2026-09-10 on the H100 pod: plain "awq" (the awq_marlin repack OOMs on 72B),
+    # expandable segments, and no FlashInfer sampler (its JIT needs nvcc, absent in the image).
     cmd = [exe, "serve", mdir, "--served-model-name", model, "--host", "127.0.0.1", "--port", str(port),
-           "--gpu-memory-utilization", os.environ.get("H3_LLM_GPU_FRAC", "0.55"),
+           "--gpu-memory-utilization", os.environ.get("H3_LLM_GPU_FRAC", "0.85"),
            "--max-model-len", os.environ.get("H3_LLM_CTX", "24576"), "--max-num-seqs", "4",
-           "--quantization", "awq_marlin", "--dtype", "float16"]
+           "--quantization", os.environ.get("H3_LLM_QUANT", "awq"), "--dtype", "float16"]
     env = dict(os.environ)
     env.pop("PYTHONUSERBASE", None); env.pop("PIP_USER", None); env.pop("PYTHONPATH", None)
+    env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+    env.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
     subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
     print(f"[MiniMax-H3] LLM sidecar starting: {model} on 127.0.0.1:{port} (log: venvs/vllm_serve.log)")
 
