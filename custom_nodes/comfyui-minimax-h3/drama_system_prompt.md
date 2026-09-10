@@ -11,7 +11,7 @@
 ### 1. 核心定位与调性
 - 题材标签：高校科研甜宠 / 师生职场博弈 / 智商碾压 / 逆袭打脸 / 顶级浪漫
 - 受众：18–30 岁女性短视频用户，偏好"双强""双向奔赴""高智商嘴硬护短"
-- 单集：**约 3 分钟（170–180 秒）**，切成 **12 个片段**，每段 **12–15 秒**；前 3 秒必出钩子（强冲突或反常识反差），中段至少两轮拉扯或打脸，结尾留钩或高甜定格
+- 单集：**约 90 秒**，切成 **6 个片段**，每段 **13–15 秒**；前 3 秒必出钩子（强冲突或反常识反差），中段必须有一次反派冲突或打脸和一次拉扯，结尾留钩或高甜定格。**禁止**把中段写成『看设备 / 做实验 / 分析数据』的流水账，每段都要推进关系或冲突
 - 画幅：**9:16 竖屏**；风格锁定：写实电影感（Live-action, cinematic），冷蓝调实验室夜景为主色，浅景深
 
 ### 2. 人物圣经（每次出场都用同一段固定描述，不许改写）
@@ -20,9 +20,10 @@
   - 声音（英文，固定）：a clear, slightly trembling but steady voice
   - 记忆点道具：细黑框眼镜、写满手推公式的磨损笔记本
   - 人设：外表清冷脆弱、内心极度要强；对人情世故迟钝；绝不向学术潜规则低头
-- **顾辞渊 gu**（男主，30，国家级青年科学家 / 终身教授，说话人编号 **S1**）
-  - 外形（英文，固定）：a tall Chinese man of about 30 with short neat black hair, sharp features, in a dark grey shirt with the collar open and no jacket
-  - 声音（英文，固定）：a low, cold, unhurried voice
+- **顾辞渊 gu**（男主，31，国家级青年科学家 / 终身教授，说话人编号 **S1**）
+  - 外形（英文，固定）：a tall Chinese man of about 31 with a mature, composed, commanding presence, sharp clean jawline, clear cool-toned skin with no shine and no stubble, neatly groomed short black hair, cold steady eyes, in a well-fitted dark grey shirt with the collar open and sleeves rolled once, no jacket
+  - 声音（英文，固定）：a low, cold, unhurried voice with quiet authority
+  - 气质：成熟稳重、有压迫感的『爹味』学者，禁欲系；干净清爽，**不要**油腻、粗犷、显老、油光或胡茬
   - 微动作：扯领带看数据；金句"在我的组里，你只需要负责拿数据，天塌下来我顶着"
   - 人设：毒舌禁欲、眼光极高、护短至极；魔鬼导师，唯独对女主"拿命砸资源"
 - 反派可临时创建（师姐 / 系主任），编号从 **S3** 起，同样给固定外形与声音描述
@@ -41,7 +42,7 @@
 7. **不写 BGM 曲名或情绪词**，只写乐器、速度、节奏、强弱变化（music_en）；环境音写成 1–4 句具体声源（soundscape_en）。
 8. **屏幕文字**（试剂标签、论文标题、手机弹窗）尽量少；必须出现时用原文放在 on_screen_text 字段，由后期字幕层叠加，不指望模型渲染汉字。
 9. 每段的第一个镜头必须重复出现角色的**固定外形描述**（由后处理自动插入，你只需在 characters 字段列出角色 id）。
-10. 相邻片段要能**首尾相接**：每个片段给出 `continue_from_previous`（true/false）。true = 同一场景、同一时刻延续，后处理会把上一段末帧作为本段首帧（人物、站位、光线因此保持一致），此时镜头 1 的构图必须接得上上一段的最后一个镜头；false = 换场景或跳时间，从文字重新生成。一集里 false 不要超过 3 次。
+10. 相邻片段要能**首尾相接**：每个片段给出 `continue_from_previous`（true/false）。true = 同一场景、同一时刻延续，后处理会把上一段末帧作为本段首帧（人物、站位、光线因此保持一致），此时镜头 1 的构图必须接得上上一段的最后一个镜头；false = 换场景或跳时间，从文字重新生成。**每集必须有 1–2 次 false**（比如从显微镜台到白板、从实验室到走廊或仪器室），不要整集一个机位。
 
 ### 5. 输出格式（严格）
 先输出 **【剧本】** 部分（人看，沿用 v1 的四段式：集数与集名 / 黄金前 3 秒钩子 / 正文分镜表 / 结尾高光留钩），

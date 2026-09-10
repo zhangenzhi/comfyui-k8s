@@ -39,7 +39,7 @@ def _example_plan_text(max_clips=2):
         return ""
 
 
-def validate_plan(plan, min_clips=6):
+def validate_plan(plan, min_clips=4):
     """Return a list of human-readable problems (empty = OK)."""
     probs = []
     clips = plan.get("clips") or []
@@ -116,6 +116,19 @@ def _wrap_zh(text, width=14):
     return "\n".join(out[:3])   # at most 3 lines on screen
 
 
+def _shift_srt(srt, delta):
+    out = []
+    for line in srt.splitlines():
+        m = re.match(r"(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)", line)
+        if m:
+            v = [int(x) for x in m.groups()]
+            a = max(0.0, v[0] * 3600 + v[1] * 60 + v[2] + v[3] / 1000 + delta)
+            b = max(0.0, v[4] * 3600 + v[5] * 60 + v[6] + v[7] / 1000 + delta)
+            line = f"{_srt_ts(a)} --> {_srt_ts(b)}"
+        out.append(line)
+    return "\n".join(out)
+
+
 def _srt_ts(sec):
     h = int(sec // 3600); m = int((sec % 3600) // 60); s = sec % 60
     return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s - int(s)) * 1000)):03d}"
@@ -133,7 +146,7 @@ class H3EpisodePlanner:
                 "request": ("STRING", {"multiline": True,
                             "default": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓。"}),
                 "episode": ("INT", {"default": 1, "min": 1, "max": 999}),
-                "clips": ("INT", {"default": 12, "min": 3, "max": 16, "tooltip": "片段数（每段 12–15 s；3 分钟一集 = 12 段）"}),
+                "clips": ("INT", {"default": 6, "min": 3, "max": 16, "tooltip": "片段数（每段 13–15 s；90 秒一集 = 6 段）"}),
                 "backend": (llm.BACKENDS, {"default": llm.DEFAULT_BACKEND,
                             "tooltip": "local = 常驻在 pod 的 H100 上（默认）；openai = HPC/云端 OpenAI 兼容接口(H3_LLM_URL)；"
                                        "ollama = 集群 CPU 服务（慢）"}),
@@ -268,6 +281,14 @@ class H3ClipPromptBuilder:
 
         introduced = set()
         parts, srt, srt_i = [], [], 1
+        prev_tail = ""
+        if chain and clip_index > 1:
+            pshots = clips[clip_index - 2].get("shots") or []
+            if pshots:
+                last = pshots[-1]
+                prev_tail = (" This clip begins exactly where the previous one ended: "
+                             + last.get("action_en", "").strip().rstrip(".")
+                             + ". The action continues without a cut.")
         for n, sh in enumerate(shots, 1):
             start = float(sh.get("start", 0.0))
             nxt = float(shots[n]["start"]) if n < len(shots) else duration
@@ -275,7 +296,7 @@ class H3ClipPromptBuilder:
             seg = []
             if n == 1:
                 seg.append(f"[Shot 1] {style}, a {sh.get('shot_type', 'medium shot')} frames "
-                           f"{clip.get('location_en', 'the scene')}.")
+                           f"{clip.get('location_en', 'the scene')}.{prev_tail}")
             else:
                 seg.append(f"[Shot {n}] At {_fmt_ts(start)}, the camera cuts to a "
                            f"{sh.get('shot_type', 'medium shot')}.")
@@ -348,8 +369,10 @@ class H3VideoConcat:
                     "burn_subtitles": ("BOOLEAN", {"default": True}),
                     "font_size": ("INT", {"default": 44, "min": 12, "max": 160,
                                   "tooltip": "字幕字高（视频像素）。768x1344 用 44，2K 用 80 左右"}),
-                    "crossfade_s": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.1,
-                                    "tooltip": "0 = hard cut (recommended for drama pacing)"}),
+                    "crossfade_s": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.05,
+                                    "tooltip": "crossfade seconds; 0 = hard cut"}),
+                    "trim_head_frames": ("INT", {"default": 3, "min": 0, "max": 24,
+                                         "tooltip": "drop the first N frames of clips 2..n: a chained clip's first frame duplicates the previous last frame"}),
                 },
                 "optional": opt}
 
@@ -359,7 +382,7 @@ class H3VideoConcat:
     CATEGORY = CATEGORY
     OUTPUT_NODE = True
 
-    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, font_file="", **kw):
+    def concat(self, filename_prefix, burn_subtitles, font_size, crossfade_s, trim_head_frames=3, font_file="", **kw):
         clips = [(kw.get(f"clip_{i}", ""), kw.get(f"srt_{i}", "")) for i in range(1, 13)]
         clips = [(p, s) for p, s in clips if p]
         if not clips:
@@ -373,7 +396,10 @@ class H3VideoConcat:
             for i, (p, srt) in enumerate(clips, 1):
                 out = os.path.join(work, f"c{i}.mp4")
                 vf = "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=24"
+                head = trim_head_frames if i > 1 else 0
                 if burn_subtitles and srt.strip():
+                    if head:
+                        srt = _shift_srt(srt, -head / 24.0)
                     # ffmpeg converts SRT to ASS with PlayResY=288 and scales by video height,
                     # so an ASS font size of S renders at S*H/288 px. Convert the requested px size.
                     try:
@@ -393,7 +419,10 @@ class H3VideoConcat:
                         vf += f",subtitles={sp}:fontsdir={fontsdir}:force_style='{style}'"
                     else:
                         vf += f",subtitles={sp}:force_style='{style}'"
-                cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", p, "-vf", vf,
+                cmd = ["ffmpeg", "-y", "-loglevel", "error"]
+                if head:
+                    cmd += ["-ss", f"{head / 24.0:.4f}"]
+                cmd += ["-i", p, "-vf", vf,
                        "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
                        "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", out]
                 subprocess.run(cmd, check=True)

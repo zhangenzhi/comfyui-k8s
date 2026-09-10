@@ -15,9 +15,8 @@ CHARACTERS = {
     },
     "gu": {
         "name_zh": "顾辞渊", "speaker": "S1",
-        "appearance_en": ("a tall Chinese man of about 30 with short neat black hair, sharp features, "
-                          "in a dark grey shirt with the collar open and no jacket"),
-        "voice_en": "a low, cold, unhurried voice",
+        "appearance_en": ("a tall Chinese man of about 31 with a mature, composed, commanding presence, sharp clean jawline, clear cool-toned skin with no shine and no stubble, neatly groomed short black hair, cold steady eyes, in a well-fitted dark grey shirt with the collar open and sleeves rolled once, no jacket"),
+        "voice_en": "a low, cold, unhurried voice with quiet authority",
     },
 }
 
