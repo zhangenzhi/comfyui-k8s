@@ -1,4 +1,65 @@
-# ComfyUI on the Rancher / Kubernetes cluster
+# 短剧生成服务：ComfyUI（研究云 K8s）× MiniMax-H3（HPC）
+
+一句话剧情需求 → 72B LLM 写剧本和分镜 → 逐段在超算上用 MiniMax-H3 生成带对白音轨的竖屏视频 →
+按音轨强制对齐的中文字幕 → 拼成整集（可选 SeedVR2 2K 超分）。整套从这个仓库部署：研究云一半在 `k8s/`、镜像和 ComfyUI 节点，
+超算一半在 `hpc/`。
+
+## 架构
+
+```
+浏览器 ─HTTPS─> nginx(TLS + Basic Auth, /test/comfyui/) ─> ComfyUI pod（研究云 K8s，1×H100）
+                                                           ├─ vLLM 侧车：Qwen2.5-72B-Instruct-AWQ（剧本/分镜，127.0.0.1:8001）
+                                                           ├─ Whisper large-v3-turbo（字幕强制对齐）
+                                                           ├─ ffmpeg（拼接、烧字幕）
+                                                           │   HTTP（内网直连计算节点）
+                                                           ├──────────> H3 服务：SGLang，PBS 作业 serve_h3.pbs（4×H100，c30636g）
+                                                           │   SSH + SFTP + qsub（受限 key）
+                                                           └──────────> SeedVR2 超分：upscale_seedvr2.pbs（sg 队列，每段一个作业）
+```
+
+## 仓库结构
+
+```
+Dockerfile, entrypoint.sh, fetch-*.sh   ComfyUI 镜像（GitHub Actions 构建推 GHCR）
+custom_nodes/comfyui-minimax-h3/        ComfyUI 节点：剧本规划、分镜→H3 提示词、H3 生成、末帧、拼接+字幕、SeedVR2 超分
+  bible.json                              人物圣经和画面风格（运行时读取，改完不用重启）
+  drama_system_prompt.md                  剧本 LLM 的系统提示词（v2，机器可读分镜）
+k8s/                                    PVC、Deployment、公网入口、nginx 子路径片段、PVC 初始化脚本、镜像预拉 Job
+hpc/                                    超算侧脚本（H3 服务、SeedVR2、LLM 备用、环境、下载）和提示词模板
+workflows/                              ComfyUI 界面工作流（h3-drama-pipeline / unsaved-workflow）与 API→UI 转换器
+examples/ep01-sweet-drama/              测试样例：一集约 60 秒的小甜剧（纯文本分镜 + 一键运行）
+```
+
+模型权重、视频、日志都不进仓库：研究云侧在 PVC（`/workspace/data`），超算侧在 `H3_ROOT` 工作目录。
+
+## 从零部署（按顺序）
+
+1. **超算侧**：按 [`hpc/README.md`](hpc/README.md) 建环境、下权重、`qsub serve_h3.pbs`，确认 `logs/server_endpoint.txt` 有地址。
+2. **镜像**：push 到 `main` 由 Actions 构建 `ghcr.io/<owner>/comfyui:<sha>`；把 digest 写进 `k8s/10-deployment.yaml` 的 `image:`（按 digest 固定，重启不拉镜像）。
+3. **研究云**（`NS=c30636-default`）：
+   ```bash
+   kubectl -n $NS apply -f k8s/00-pvc.yaml
+   htpasswd -Bc htpasswd <user> && kubectl -n $NS create secret generic comfyui-htpasswd --from-file=htpasswd
+   kubectl -n $NS create secret generic comfyui-hpc-ssh --from-file=key=$HOME/.ssh/<受限key>   # authorized_keys 里 from="<pod 出口网段>",no-pty
+   # 按自己的环境改 k8s/10-deployment.yaml 的 env：HPC_HOST / HPC_USER / H3_ROOT / H3_ENDPOINT（可留空，自动发现）
+   kubectl -n $NS apply -f k8s/10-deployment.yaml
+   bash k8s/bootstrap-pvc.sh                    # 字体、vLLM 虚拟环境、72B 权重（约 50 GB，一次性）
+   kubectl -n $NS rollout restart deploy/comfyui   # 侧车随 ComfyUI 启动，约 4 分钟加载完
+   ```
+4. **公网入口**：把 [`k8s/31-nginx-comfyui-subpath.conf`](k8s/31-nginx-comfyui-subpath.conf) 并进现有 TLS nginx（我们复用 ffformer 的入口，见 `k8s/30-public-tls.yaml`）。
+5. **验证**：`examples/ep01-sweet-drama/run.sh` 跑一集测试样例，约 30 分钟出片。
+
+## 当前默认与结论（2026-09-10）
+
+- 一集约 90 秒 / 6 段；剧本 LLM 用 Qwen2.5-72B-Instruct-AWQ（vLLM 侧车，`--quantization awq`、`expandable_segments`、禁用 FlashInfer 采样器）。14B 太弱，不再用于剧情。
+- 画面：人物句用"选角式"精确外形，光线用暖色台灯主光 + 显示器/显微镜冷色补光（`bible.json` 的 `style_en`）；不要平铺蓝光，也不要纪录片式暗调。
+- 段落全部 t2va、硬切，效果优于用上一段末帧串接（串接会越串越糊）；首末帧串接只留作可选。
+- 字幕：文本以分镜台词为准，时间由 Whisper 字级时间戳强制对齐到 H3 音轨；描述开头放"无字幕"句抑制 H3 自己画字幕。
+- SDXL / IPAdapter FaceID 定妆已撤（质量不如 H3 自己出的脸）；SeedVR2 超分默认不跑，需要 2K 时再接。
+
+---
+以下是各部分的详细说明。
+
 
 按 `ffformer/deploy` 同一套路（`c30636-default` 命名空间、PodSecurity `restricted`、
 `runtimeClassName: nvidia`、PVC 持久化、NodePort + MetalLB + nginx TLS）部署 ComfyUI。

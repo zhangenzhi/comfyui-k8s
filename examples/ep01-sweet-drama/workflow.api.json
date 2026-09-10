@@ -1,0 +1,226 @@
+{
+ "prompt": {
+  "b1": {
+   "class_type": "MiniMaxH3_ClipPromptBuilder",
+   "inputs": {
+    "shot_plan_json": "{\"episode\": 1, \"title\": \"深夜实验室，魔鬼导师撕了我的论文\", \"aspect_ratio\": \"9:16\", \"style_en\": \"Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame\", \"clips\": [{\"index\": 1, \"duration\": 12.0, \"location_en\": \"a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"shen\"], \"action_en\": \"a stack of printed A4 reports is flung hard into frame and scatters across the floor around her as she crouches and silently picks up the pages one by one, a worn notebook covered in handwritten formulas lying beside her\", \"camera_en\": \"pushes in with small amplitude at slow speed toward her trembling hands\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"voiceover\", \"text_zh\": \"重做。连这种低级误差都查不出，你凭什么进我的组？\"}], \"sfx_en\": \"sheets of paper slap against the tile floor\"}, {\"start\": 5.5, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"a slender pale male hand presses down on the last sheet of paper before she can reach it\", \"camera_en\": \"tilts up with large amplitude at slow speed, revealing him looking down at her with a cold, composed expression\", \"dialogue\": [], \"sfx_en\": \"a single slow footstep lands on the tile\"}, {\"start\": 8.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he bends down close to her ear while she keeps her head lowered and her shoulders stiffen\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"委屈了？晚上就偷偷用我的专属权限？\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Sheets of paper flutter and slap against a hard laboratory floor while a low, steady hum from the microscope cooling fans and refrigerators fills the room, with a faint electrical buzz from a fluorescent tube.\", \"music_en\": \"Sparse, low piano notes at a very slow tempo over a sustained sub-bass drone, punctuated by one deep bass hit on the first cut.\"}, {\"index\": 2, \"duration\": 12.0, \"location_en\": \"the same night laboratory, the blue microscope glow on their faces\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\", \"gu\"], \"action_en\": \"she lifts her head to meet his eyes, tears glinting behind her glasses but her gaze stubborn and unflinching\", \"camera_en\": \"holds a static shot on her face\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"顾教授，这不是低级误差。\"}], \"sfx_en\": \"her uneven, held breathing is audible\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she opens the worn notebook and turns it toward him, pages dense with handwritten formulas and a circled curve\", \"camera_en\": \"pushes in with small amplitude at slow speed toward the notebook\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"是室温荧光淬灭异常，我发现了新的靶向通路。\"}], \"sfx_en\": \"pages rustle\"}, {\"start\": 8.5, \"shot_type\": \"medium shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his gaze rests on her lips for half a second, then he reaches down and takes the pen out of her hand\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"the faint click of the pen\"}], \"soundscape_en\": \"Low room tone from laboratory refrigerators and a microscope fan, soft page rustles, and her held breathing in the close-ups.\", \"music_en\": \"The sub-bass drone continues under sparse piano notes, with a single soft string swell that fades before the last shot.\"}, {\"index\": 3, \"duration\": 12.0, \"location_en\": \"a white board beside a lab bench in the same night laboratory\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he plants one hand on the lab bench and turns to a whiteboard, writing three lines of kinetic equations in fast, sharp strokes\", \"camera_en\": \"trucks right with small amplitude at slow speed following his hand\", \"dialogue\": [], \"sfx_en\": \"the marker squeaks against the whiteboard\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she stares at the equations, lips parting slightly as the tears on her cheek dry\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}, {\"start\": 6.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he caps the marker and turns to face her, standing close\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"沈听澜，别拿这些小打小闹交差。\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Marker squeaks on the whiteboard, the low hum of laboratory equipment, and a chair creaking once.\", \"music_en\": \"A slow heartbeat-like kick-drum pulse enters under the piano and gradually increases in volume.\"}, {\"index\": 4, \"duration\": 12.0, \"location_en\": \"the same night laboratory, a glass door with a card reader glowing red at the back\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"he looks down at her, voice low and unhurried\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"既然有野心，就把目标定在《Nature》封面。\"}], \"sfx_en\": \"\"}, {\"start\": 5.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she freezes, eyes wide behind her glasses\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"什么？\"}], \"sfx_en\": \"a short intake of breath\"}, {\"start\": 7.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he turns, swipes a card on the reader and the glass door of the top-tier instrument room unlocks with a soft click, then he glances back over his shoulder with one eyebrow raised\", \"camera_en\": \"tracks him with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"今晚，我亲自做你的一助。\"}], \"sfx_en\": \"the card reader beeps and the door lock clicks open\"}], \"soundscape_en\": \"A card reader beep and a magnetic lock clicking open, the hiss of the glass door, and the steady equipment hum.\", \"music_en\": \"The heartbeat pulse continues with a low string drone, dynamics rising slightly toward the end.\"}, {\"index\": 5, \"duration\": 10.0, \"location_en\": \"the instrument room, a pipette and sample rack on a steel bench under a cool white lamp\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her hand holds a pipette over a sample rack, slightly unsteady\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [], \"sfx_en\": \"the tiny click of the pipette\"}, {\"start\": 3.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his hand closes over hers on the pipette, fingertips warm against her skin, and her breath catches as she glances up\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"a sharp caught breath\"}, {\"start\": 7.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her face in profile, lips parted, the moment frozen as she looks at him\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}], \"soundscape_en\": \"Near silence with a faint lamp hum, one pipette click, and a single caught breath.\", \"music_en\": \"The heartbeat pulse and a rising sub-bass swell stop abruptly on the final shot, leaving silence.\"}], \"ending_hook_zh\": \"顾辞渊俯身握住沈听澜握着移液枪的手，指尖温热相触，她心跳漏了半拍。\"}",
+    "clip_index": 1,
+    "task": "t2va",
+    "chain_mode": "never",
+    "last_frame_given": false
+   }
+  },
+  "g1": {
+   "class_type": "MiniMaxH3_Generate",
+   "inputs": {
+    "prompt": [
+     "b1",
+     0
+    ],
+    "task": "t2va",
+    "duration_seconds": [
+     "b1",
+     1
+    ],
+    "aspect_ratio": "9:16",
+    "seed": 101,
+    "steps": 50,
+    "short_edge": 768,
+    "flow_shift": 12.0,
+    "audio_flow_shift": 3.0,
+    "filename_prefix": "h3/examples/ep01/clip01",
+    "timeout_s": 3600,
+    "use_keyframes": false,
+    "endpoint": ""
+   }
+  },
+  "b2": {
+   "class_type": "MiniMaxH3_ClipPromptBuilder",
+   "inputs": {
+    "shot_plan_json": "{\"episode\": 1, \"title\": \"深夜实验室，魔鬼导师撕了我的论文\", \"aspect_ratio\": \"9:16\", \"style_en\": \"Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame\", \"clips\": [{\"index\": 1, \"duration\": 12.0, \"location_en\": \"a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"shen\"], \"action_en\": \"a stack of printed A4 reports is flung hard into frame and scatters across the floor around her as she crouches and silently picks up the pages one by one, a worn notebook covered in handwritten formulas lying beside her\", \"camera_en\": \"pushes in with small amplitude at slow speed toward her trembling hands\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"voiceover\", \"text_zh\": \"重做。连这种低级误差都查不出，你凭什么进我的组？\"}], \"sfx_en\": \"sheets of paper slap against the tile floor\"}, {\"start\": 5.5, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"a slender pale male hand presses down on the last sheet of paper before she can reach it\", \"camera_en\": \"tilts up with large amplitude at slow speed, revealing him looking down at her with a cold, composed expression\", \"dialogue\": [], \"sfx_en\": \"a single slow footstep lands on the tile\"}, {\"start\": 8.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he bends down close to her ear while she keeps her head lowered and her shoulders stiffen\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"委屈了？晚上就偷偷用我的专属权限？\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Sheets of paper flutter and slap against a hard laboratory floor while a low, steady hum from the microscope cooling fans and refrigerators fills the room, with a faint electrical buzz from a fluorescent tube.\", \"music_en\": \"Sparse, low piano notes at a very slow tempo over a sustained sub-bass drone, punctuated by one deep bass hit on the first cut.\"}, {\"index\": 2, \"duration\": 12.0, \"location_en\": \"the same night laboratory, the blue microscope glow on their faces\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\", \"gu\"], \"action_en\": \"she lifts her head to meet his eyes, tears glinting behind her glasses but her gaze stubborn and unflinching\", \"camera_en\": \"holds a static shot on her face\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"顾教授，这不是低级误差。\"}], \"sfx_en\": \"her uneven, held breathing is audible\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she opens the worn notebook and turns it toward him, pages dense with handwritten formulas and a circled curve\", \"camera_en\": \"pushes in with small amplitude at slow speed toward the notebook\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"是室温荧光淬灭异常，我发现了新的靶向通路。\"}], \"sfx_en\": \"pages rustle\"}, {\"start\": 8.5, \"shot_type\": \"medium shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his gaze rests on her lips for half a second, then he reaches down and takes the pen out of her hand\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"the faint click of the pen\"}], \"soundscape_en\": \"Low room tone from laboratory refrigerators and a microscope fan, soft page rustles, and her held breathing in the close-ups.\", \"music_en\": \"The sub-bass drone continues under sparse piano notes, with a single soft string swell that fades before the last shot.\"}, {\"index\": 3, \"duration\": 12.0, \"location_en\": \"a white board beside a lab bench in the same night laboratory\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he plants one hand on the lab bench and turns to a whiteboard, writing three lines of kinetic equations in fast, sharp strokes\", \"camera_en\": \"trucks right with small amplitude at slow speed following his hand\", \"dialogue\": [], \"sfx_en\": \"the marker squeaks against the whiteboard\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she stares at the equations, lips parting slightly as the tears on her cheek dry\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}, {\"start\": 6.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he caps the marker and turns to face her, standing close\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"沈听澜，别拿这些小打小闹交差。\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Marker squeaks on the whiteboard, the low hum of laboratory equipment, and a chair creaking once.\", \"music_en\": \"A slow heartbeat-like kick-drum pulse enters under the piano and gradually increases in volume.\"}, {\"index\": 4, \"duration\": 12.0, \"location_en\": \"the same night laboratory, a glass door with a card reader glowing red at the back\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"he looks down at her, voice low and unhurried\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"既然有野心，就把目标定在《Nature》封面。\"}], \"sfx_en\": \"\"}, {\"start\": 5.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she freezes, eyes wide behind her glasses\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"什么？\"}], \"sfx_en\": \"a short intake of breath\"}, {\"start\": 7.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he turns, swipes a card on the reader and the glass door of the top-tier instrument room unlocks with a soft click, then he glances back over his shoulder with one eyebrow raised\", \"camera_en\": \"tracks him with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"今晚，我亲自做你的一助。\"}], \"sfx_en\": \"the card reader beeps and the door lock clicks open\"}], \"soundscape_en\": \"A card reader beep and a magnetic lock clicking open, the hiss of the glass door, and the steady equipment hum.\", \"music_en\": \"The heartbeat pulse continues with a low string drone, dynamics rising slightly toward the end.\"}, {\"index\": 5, \"duration\": 10.0, \"location_en\": \"the instrument room, a pipette and sample rack on a steel bench under a cool white lamp\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her hand holds a pipette over a sample rack, slightly unsteady\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [], \"sfx_en\": \"the tiny click of the pipette\"}, {\"start\": 3.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his hand closes over hers on the pipette, fingertips warm against her skin, and her breath catches as she glances up\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"a sharp caught breath\"}, {\"start\": 7.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her face in profile, lips parted, the moment frozen as she looks at him\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}], \"soundscape_en\": \"Near silence with a faint lamp hum, one pipette click, and a single caught breath.\", \"music_en\": \"The heartbeat pulse and a rising sub-bass swell stop abruptly on the final shot, leaving silence.\"}], \"ending_hook_zh\": \"顾辞渊俯身握住沈听澜握着移液枪的手，指尖温热相触，她心跳漏了半拍。\"}",
+    "clip_index": 2,
+    "task": "t2va",
+    "chain_mode": "never",
+    "last_frame_given": false
+   }
+  },
+  "g2": {
+   "class_type": "MiniMaxH3_Generate",
+   "inputs": {
+    "prompt": [
+     "b2",
+     0
+    ],
+    "task": "t2va",
+    "duration_seconds": [
+     "b2",
+     1
+    ],
+    "aspect_ratio": "9:16",
+    "seed": 102,
+    "steps": 50,
+    "short_edge": 768,
+    "flow_shift": 12.0,
+    "audio_flow_shift": 3.0,
+    "filename_prefix": "h3/examples/ep01/clip02",
+    "timeout_s": 3600,
+    "use_keyframes": false,
+    "endpoint": ""
+   }
+  },
+  "b3": {
+   "class_type": "MiniMaxH3_ClipPromptBuilder",
+   "inputs": {
+    "shot_plan_json": "{\"episode\": 1, \"title\": \"深夜实验室，魔鬼导师撕了我的论文\", \"aspect_ratio\": \"9:16\", \"style_en\": \"Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame\", \"clips\": [{\"index\": 1, \"duration\": 12.0, \"location_en\": \"a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"shen\"], \"action_en\": \"a stack of printed A4 reports is flung hard into frame and scatters across the floor around her as she crouches and silently picks up the pages one by one, a worn notebook covered in handwritten formulas lying beside her\", \"camera_en\": \"pushes in with small amplitude at slow speed toward her trembling hands\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"voiceover\", \"text_zh\": \"重做。连这种低级误差都查不出，你凭什么进我的组？\"}], \"sfx_en\": \"sheets of paper slap against the tile floor\"}, {\"start\": 5.5, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"a slender pale male hand presses down on the last sheet of paper before she can reach it\", \"camera_en\": \"tilts up with large amplitude at slow speed, revealing him looking down at her with a cold, composed expression\", \"dialogue\": [], \"sfx_en\": \"a single slow footstep lands on the tile\"}, {\"start\": 8.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he bends down close to her ear while she keeps her head lowered and her shoulders stiffen\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"委屈了？晚上就偷偷用我的专属权限？\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Sheets of paper flutter and slap against a hard laboratory floor while a low, steady hum from the microscope cooling fans and refrigerators fills the room, with a faint electrical buzz from a fluorescent tube.\", \"music_en\": \"Sparse, low piano notes at a very slow tempo over a sustained sub-bass drone, punctuated by one deep bass hit on the first cut.\"}, {\"index\": 2, \"duration\": 12.0, \"location_en\": \"the same night laboratory, the blue microscope glow on their faces\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\", \"gu\"], \"action_en\": \"she lifts her head to meet his eyes, tears glinting behind her glasses but her gaze stubborn and unflinching\", \"camera_en\": \"holds a static shot on her face\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"顾教授，这不是低级误差。\"}], \"sfx_en\": \"her uneven, held breathing is audible\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she opens the worn notebook and turns it toward him, pages dense with handwritten formulas and a circled curve\", \"camera_en\": \"pushes in with small amplitude at slow speed toward the notebook\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"是室温荧光淬灭异常，我发现了新的靶向通路。\"}], \"sfx_en\": \"pages rustle\"}, {\"start\": 8.5, \"shot_type\": \"medium shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his gaze rests on her lips for half a second, then he reaches down and takes the pen out of her hand\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"the faint click of the pen\"}], \"soundscape_en\": \"Low room tone from laboratory refrigerators and a microscope fan, soft page rustles, and her held breathing in the close-ups.\", \"music_en\": \"The sub-bass drone continues under sparse piano notes, with a single soft string swell that fades before the last shot.\"}, {\"index\": 3, \"duration\": 12.0, \"location_en\": \"a white board beside a lab bench in the same night laboratory\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he plants one hand on the lab bench and turns to a whiteboard, writing three lines of kinetic equations in fast, sharp strokes\", \"camera_en\": \"trucks right with small amplitude at slow speed following his hand\", \"dialogue\": [], \"sfx_en\": \"the marker squeaks against the whiteboard\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she stares at the equations, lips parting slightly as the tears on her cheek dry\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}, {\"start\": 6.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he caps the marker and turns to face her, standing close\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"沈听澜，别拿这些小打小闹交差。\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Marker squeaks on the whiteboard, the low hum of laboratory equipment, and a chair creaking once.\", \"music_en\": \"A slow heartbeat-like kick-drum pulse enters under the piano and gradually increases in volume.\"}, {\"index\": 4, \"duration\": 12.0, \"location_en\": \"the same night laboratory, a glass door with a card reader glowing red at the back\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"he looks down at her, voice low and unhurried\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"既然有野心，就把目标定在《Nature》封面。\"}], \"sfx_en\": \"\"}, {\"start\": 5.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she freezes, eyes wide behind her glasses\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"什么？\"}], \"sfx_en\": \"a short intake of breath\"}, {\"start\": 7.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he turns, swipes a card on the reader and the glass door of the top-tier instrument room unlocks with a soft click, then he glances back over his shoulder with one eyebrow raised\", \"camera_en\": \"tracks him with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"今晚，我亲自做你的一助。\"}], \"sfx_en\": \"the card reader beeps and the door lock clicks open\"}], \"soundscape_en\": \"A card reader beep and a magnetic lock clicking open, the hiss of the glass door, and the steady equipment hum.\", \"music_en\": \"The heartbeat pulse continues with a low string drone, dynamics rising slightly toward the end.\"}, {\"index\": 5, \"duration\": 10.0, \"location_en\": \"the instrument room, a pipette and sample rack on a steel bench under a cool white lamp\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her hand holds a pipette over a sample rack, slightly unsteady\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [], \"sfx_en\": \"the tiny click of the pipette\"}, {\"start\": 3.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his hand closes over hers on the pipette, fingertips warm against her skin, and her breath catches as she glances up\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"a sharp caught breath\"}, {\"start\": 7.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her face in profile, lips parted, the moment frozen as she looks at him\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}], \"soundscape_en\": \"Near silence with a faint lamp hum, one pipette click, and a single caught breath.\", \"music_en\": \"The heartbeat pulse and a rising sub-bass swell stop abruptly on the final shot, leaving silence.\"}], \"ending_hook_zh\": \"顾辞渊俯身握住沈听澜握着移液枪的手，指尖温热相触，她心跳漏了半拍。\"}",
+    "clip_index": 3,
+    "task": "t2va",
+    "chain_mode": "never",
+    "last_frame_given": false
+   }
+  },
+  "g3": {
+   "class_type": "MiniMaxH3_Generate",
+   "inputs": {
+    "prompt": [
+     "b3",
+     0
+    ],
+    "task": "t2va",
+    "duration_seconds": [
+     "b3",
+     1
+    ],
+    "aspect_ratio": "9:16",
+    "seed": 103,
+    "steps": 50,
+    "short_edge": 768,
+    "flow_shift": 12.0,
+    "audio_flow_shift": 3.0,
+    "filename_prefix": "h3/examples/ep01/clip03",
+    "timeout_s": 3600,
+    "use_keyframes": false,
+    "endpoint": ""
+   }
+  },
+  "b4": {
+   "class_type": "MiniMaxH3_ClipPromptBuilder",
+   "inputs": {
+    "shot_plan_json": "{\"episode\": 1, \"title\": \"深夜实验室，魔鬼导师撕了我的论文\", \"aspect_ratio\": \"9:16\", \"style_en\": \"Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame\", \"clips\": [{\"index\": 1, \"duration\": 12.0, \"location_en\": \"a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"shen\"], \"action_en\": \"a stack of printed A4 reports is flung hard into frame and scatters across the floor around her as she crouches and silently picks up the pages one by one, a worn notebook covered in handwritten formulas lying beside her\", \"camera_en\": \"pushes in with small amplitude at slow speed toward her trembling hands\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"voiceover\", \"text_zh\": \"重做。连这种低级误差都查不出，你凭什么进我的组？\"}], \"sfx_en\": \"sheets of paper slap against the tile floor\"}, {\"start\": 5.5, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"a slender pale male hand presses down on the last sheet of paper before she can reach it\", \"camera_en\": \"tilts up with large amplitude at slow speed, revealing him looking down at her with a cold, composed expression\", \"dialogue\": [], \"sfx_en\": \"a single slow footstep lands on the tile\"}, {\"start\": 8.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he bends down close to her ear while she keeps her head lowered and her shoulders stiffen\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"委屈了？晚上就偷偷用我的专属权限？\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Sheets of paper flutter and slap against a hard laboratory floor while a low, steady hum from the microscope cooling fans and refrigerators fills the room, with a faint electrical buzz from a fluorescent tube.\", \"music_en\": \"Sparse, low piano notes at a very slow tempo over a sustained sub-bass drone, punctuated by one deep bass hit on the first cut.\"}, {\"index\": 2, \"duration\": 12.0, \"location_en\": \"the same night laboratory, the blue microscope glow on their faces\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\", \"gu\"], \"action_en\": \"she lifts her head to meet his eyes, tears glinting behind her glasses but her gaze stubborn and unflinching\", \"camera_en\": \"holds a static shot on her face\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"顾教授，这不是低级误差。\"}], \"sfx_en\": \"her uneven, held breathing is audible\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she opens the worn notebook and turns it toward him, pages dense with handwritten formulas and a circled curve\", \"camera_en\": \"pushes in with small amplitude at slow speed toward the notebook\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"是室温荧光淬灭异常，我发现了新的靶向通路。\"}], \"sfx_en\": \"pages rustle\"}, {\"start\": 8.5, \"shot_type\": \"medium shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his gaze rests on her lips for half a second, then he reaches down and takes the pen out of her hand\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"the faint click of the pen\"}], \"soundscape_en\": \"Low room tone from laboratory refrigerators and a microscope fan, soft page rustles, and her held breathing in the close-ups.\", \"music_en\": \"The sub-bass drone continues under sparse piano notes, with a single soft string swell that fades before the last shot.\"}, {\"index\": 3, \"duration\": 12.0, \"location_en\": \"a white board beside a lab bench in the same night laboratory\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he plants one hand on the lab bench and turns to a whiteboard, writing three lines of kinetic equations in fast, sharp strokes\", \"camera_en\": \"trucks right with small amplitude at slow speed following his hand\", \"dialogue\": [], \"sfx_en\": \"the marker squeaks against the whiteboard\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she stares at the equations, lips parting slightly as the tears on her cheek dry\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}, {\"start\": 6.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he caps the marker and turns to face her, standing close\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"沈听澜，别拿这些小打小闹交差。\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Marker squeaks on the whiteboard, the low hum of laboratory equipment, and a chair creaking once.\", \"music_en\": \"A slow heartbeat-like kick-drum pulse enters under the piano and gradually increases in volume.\"}, {\"index\": 4, \"duration\": 12.0, \"location_en\": \"the same night laboratory, a glass door with a card reader glowing red at the back\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"he looks down at her, voice low and unhurried\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"既然有野心，就把目标定在《Nature》封面。\"}], \"sfx_en\": \"\"}, {\"start\": 5.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she freezes, eyes wide behind her glasses\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"什么？\"}], \"sfx_en\": \"a short intake of breath\"}, {\"start\": 7.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he turns, swipes a card on the reader and the glass door of the top-tier instrument room unlocks with a soft click, then he glances back over his shoulder with one eyebrow raised\", \"camera_en\": \"tracks him with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"今晚，我亲自做你的一助。\"}], \"sfx_en\": \"the card reader beeps and the door lock clicks open\"}], \"soundscape_en\": \"A card reader beep and a magnetic lock clicking open, the hiss of the glass door, and the steady equipment hum.\", \"music_en\": \"The heartbeat pulse continues with a low string drone, dynamics rising slightly toward the end.\"}, {\"index\": 5, \"duration\": 10.0, \"location_en\": \"the instrument room, a pipette and sample rack on a steel bench under a cool white lamp\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her hand holds a pipette over a sample rack, slightly unsteady\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [], \"sfx_en\": \"the tiny click of the pipette\"}, {\"start\": 3.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his hand closes over hers on the pipette, fingertips warm against her skin, and her breath catches as she glances up\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"a sharp caught breath\"}, {\"start\": 7.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her face in profile, lips parted, the moment frozen as she looks at him\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}], \"soundscape_en\": \"Near silence with a faint lamp hum, one pipette click, and a single caught breath.\", \"music_en\": \"The heartbeat pulse and a rising sub-bass swell stop abruptly on the final shot, leaving silence.\"}], \"ending_hook_zh\": \"顾辞渊俯身握住沈听澜握着移液枪的手，指尖温热相触，她心跳漏了半拍。\"}",
+    "clip_index": 4,
+    "task": "t2va",
+    "chain_mode": "never",
+    "last_frame_given": false
+   }
+  },
+  "g4": {
+   "class_type": "MiniMaxH3_Generate",
+   "inputs": {
+    "prompt": [
+     "b4",
+     0
+    ],
+    "task": "t2va",
+    "duration_seconds": [
+     "b4",
+     1
+    ],
+    "aspect_ratio": "9:16",
+    "seed": 104,
+    "steps": 50,
+    "short_edge": 768,
+    "flow_shift": 12.0,
+    "audio_flow_shift": 3.0,
+    "filename_prefix": "h3/examples/ep01/clip04",
+    "timeout_s": 3600,
+    "use_keyframes": false,
+    "endpoint": ""
+   }
+  },
+  "b5": {
+   "class_type": "MiniMaxH3_ClipPromptBuilder",
+   "inputs": {
+    "shot_plan_json": "{\"episode\": 1, \"title\": \"深夜实验室，魔鬼导师撕了我的论文\", \"aspect_ratio\": \"9:16\", \"style_en\": \"Live-action, cinematic, cool blue-tinted night laboratory interior, shallow depth of field, in a vertical 9:16 frame\", \"clips\": [{\"index\": 1, \"duration\": 12.0, \"location_en\": \"a biological nanotechnology laboratory at two in the morning, lit only by the faint blue glow of a super-resolution microscope and its monitor\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"shen\"], \"action_en\": \"a stack of printed A4 reports is flung hard into frame and scatters across the floor around her as she crouches and silently picks up the pages one by one, a worn notebook covered in handwritten formulas lying beside her\", \"camera_en\": \"pushes in with small amplitude at slow speed toward her trembling hands\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"voiceover\", \"text_zh\": \"重做。连这种低级误差都查不出，你凭什么进我的组？\"}], \"sfx_en\": \"sheets of paper slap against the tile floor\"}, {\"start\": 5.5, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"a slender pale male hand presses down on the last sheet of paper before she can reach it\", \"camera_en\": \"tilts up with large amplitude at slow speed, revealing him looking down at her with a cold, composed expression\", \"dialogue\": [], \"sfx_en\": \"a single slow footstep lands on the tile\"}, {\"start\": 8.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he bends down close to her ear while she keeps her head lowered and her shoulders stiffen\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"委屈了？晚上就偷偷用我的专属权限？\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Sheets of paper flutter and slap against a hard laboratory floor while a low, steady hum from the microscope cooling fans and refrigerators fills the room, with a faint electrical buzz from a fluorescent tube.\", \"music_en\": \"Sparse, low piano notes at a very slow tempo over a sustained sub-bass drone, punctuated by one deep bass hit on the first cut.\"}, {\"index\": 2, \"duration\": 12.0, \"location_en\": \"the same night laboratory, the blue microscope glow on their faces\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\", \"gu\"], \"action_en\": \"she lifts her head to meet his eyes, tears glinting behind her glasses but her gaze stubborn and unflinching\", \"camera_en\": \"holds a static shot on her face\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"顾教授，这不是低级误差。\"}], \"sfx_en\": \"her uneven, held breathing is audible\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she opens the worn notebook and turns it toward him, pages dense with handwritten formulas and a circled curve\", \"camera_en\": \"pushes in with small amplitude at slow speed toward the notebook\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"是室温荧光淬灭异常，我发现了新的靶向通路。\"}], \"sfx_en\": \"pages rustle\"}, {\"start\": 8.5, \"shot_type\": \"medium shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his gaze rests on her lips for half a second, then he reaches down and takes the pen out of her hand\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"the faint click of the pen\"}], \"soundscape_en\": \"Low room tone from laboratory refrigerators and a microscope fan, soft page rustles, and her held breathing in the close-ups.\", \"music_en\": \"The sub-bass drone continues under sparse piano notes, with a single soft string swell that fades before the last shot.\"}, {\"index\": 3, \"duration\": 12.0, \"location_en\": \"a white board beside a lab bench in the same night laboratory\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he plants one hand on the lab bench and turns to a whiteboard, writing three lines of kinetic equations in fast, sharp strokes\", \"camera_en\": \"trucks right with small amplitude at slow speed following his hand\", \"dialogue\": [], \"sfx_en\": \"the marker squeaks against the whiteboard\"}, {\"start\": 4.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she stares at the equations, lips parting slightly as the tears on her cheek dry\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}, {\"start\": 6.5, \"shot_type\": \"medium two-shot\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"he caps the marker and turns to face her, standing close\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"沈听澜，别拿这些小打小闹交差。\"}], \"sfx_en\": \"\"}], \"soundscape_en\": \"Marker squeaks on the whiteboard, the low hum of laboratory equipment, and a chair creaking once.\", \"music_en\": \"A slow heartbeat-like kick-drum pulse enters under the piano and gradually increases in volume.\"}, {\"index\": 4, \"duration\": 12.0, \"location_en\": \"the same night laboratory, a glass door with a card reader glowing red at the back\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\"], \"action_en\": \"he looks down at her, voice low and unhurried\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"既然有野心，就把目标定在《Nature》封面。\"}], \"sfx_en\": \"\"}, {\"start\": 5.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"she freezes, eyes wide behind her glasses\", \"camera_en\": \"holds a static shot\", \"dialogue\": [{\"speaker\": \"shen\", \"mode\": \"onscreen\", \"text_zh\": \"什么？\"}], \"sfx_en\": \"a short intake of breath\"}, {\"start\": 7.0, \"shot_type\": \"medium shot\", \"characters\": [\"gu\"], \"action_en\": \"he turns, swipes a card on the reader and the glass door of the top-tier instrument room unlocks with a soft click, then he glances back over his shoulder with one eyebrow raised\", \"camera_en\": \"tracks him with small amplitude at slow speed\", \"dialogue\": [{\"speaker\": \"gu\", \"mode\": \"onscreen\", \"text_zh\": \"今晚，我亲自做你的一助。\"}], \"sfx_en\": \"the card reader beeps and the door lock clicks open\"}], \"soundscape_en\": \"A card reader beep and a magnetic lock clicking open, the hiss of the glass door, and the steady equipment hum.\", \"music_en\": \"The heartbeat pulse continues with a low string drone, dynamics rising slightly toward the end.\"}, {\"index\": 5, \"duration\": 10.0, \"location_en\": \"the instrument room, a pipette and sample rack on a steel bench under a cool white lamp\", \"shots\": [{\"start\": 0.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her hand holds a pipette over a sample rack, slightly unsteady\", \"camera_en\": \"pushes in with small amplitude at slow speed\", \"dialogue\": [], \"sfx_en\": \"the tiny click of the pipette\"}, {\"start\": 3.0, \"shot_type\": \"close-up\", \"characters\": [\"gu\", \"shen\"], \"action_en\": \"his hand closes over hers on the pipette, fingertips warm against her skin, and her breath catches as she glances up\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"a sharp caught breath\"}, {\"start\": 7.0, \"shot_type\": \"close-up\", \"characters\": [\"shen\"], \"action_en\": \"her face in profile, lips parted, the moment frozen as she looks at him\", \"camera_en\": \"holds a static shot\", \"dialogue\": [], \"sfx_en\": \"\"}], \"soundscape_en\": \"Near silence with a faint lamp hum, one pipette click, and a single caught breath.\", \"music_en\": \"The heartbeat pulse and a rising sub-bass swell stop abruptly on the final shot, leaving silence.\"}], \"ending_hook_zh\": \"顾辞渊俯身握住沈听澜握着移液枪的手，指尖温热相触，她心跳漏了半拍。\"}",
+    "clip_index": 5,
+    "task": "t2va",
+    "chain_mode": "never",
+    "last_frame_given": false
+   }
+  },
+  "g5": {
+   "class_type": "MiniMaxH3_Generate",
+   "inputs": {
+    "prompt": [
+     "b5",
+     0
+    ],
+    "task": "t2va",
+    "duration_seconds": [
+     "b5",
+     1
+    ],
+    "aspect_ratio": "9:16",
+    "seed": 105,
+    "steps": 50,
+    "short_edge": 768,
+    "flow_shift": 12.0,
+    "audio_flow_shift": 3.0,
+    "filename_prefix": "h3/examples/ep01/clip05",
+    "timeout_s": 3600,
+    "use_keyframes": false,
+    "endpoint": ""
+   }
+  },
+  "concat": {
+   "class_type": "MiniMaxH3_VideoConcat",
+   "inputs": {
+    "filename_prefix": "h3/examples/ep01/episode01_768p",
+    "burn_subtitles": true,
+    "font_size": 44,
+    "crossfade_s": 0.0,
+    "subtitle_source": "aligned",
+    "trim_head_frames": 0,
+    "font_file": "/workspace/data/fonts/NotoSansCJK-Regular.ttc",
+    "clip_1": [
+     "g1",
+     1
+    ],
+    "srt_1": [
+     "b1",
+     2
+    ],
+    "clip_2": [
+     "g2",
+     1
+    ],
+    "srt_2": [
+     "b2",
+     2
+    ],
+    "clip_3": [
+     "g3",
+     1
+    ],
+    "srt_3": [
+     "b3",
+     2
+    ],
+    "clip_4": [
+     "g4",
+     1
+    ],
+    "srt_4": [
+     "b4",
+     2
+    ],
+    "clip_5": [
+     "g5",
+     1
+    ],
+    "srt_5": [
+     "b5",
+     2
+    ]
+   }
+  }
+ }
+}

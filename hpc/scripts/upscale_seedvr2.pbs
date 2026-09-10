@@ -1,0 +1,62 @@
+#!/bin/bash
+#PBS -q sg
+#PBS -W group_list=c30746
+#PBS -l select=1:ngpus=1
+#PBS -l walltime=01:00:00
+#PBS -N seedvr2_up
+#PBS -j oe
+#PBS -o /lustre1/work/c30636/test/minimax-h3/logs/
+# SeedVR2-7B sharp post-upscale of an H3 mp4 to a 1440 px short edge (2K), audio remuxed from the source.
+# usage: qsub -v IN=/abs/path/clip.mp4[,RES=1440,BATCH=33] scripts/upscale_seedvr2.pbs
+set -uo pipefail
+ROOT=${H3_ROOT:-/lustre1/work/c30636/test/minimax-h3}   # work dir: models/, outputs/, logs/, tools/
+IN=${IN:?set IN=/abs/path/to/input.mp4}
+RES=${RES:-1440}
+BATCH=${BATCH:-33}          # frames per batch, must be 4n+1
+MODEL=${MODEL:-seedvr2_ema_7b_sharp_fp16.safetensors}
+TILED=${TILED:-1}            # 1: tiled VAE encode/decode (safe), 0: untiled (faster on 80 GB)
+COMPILE=${COMPILE:-0}        # 1: torch.compile DiT+VAE
+SUFFIX=${SUFFIX:-}
+OUTDIR=$ROOT/outputs/upscaled; mkdir -p $OUTDIR
+base=$(basename "${IN%.mp4}")
+OUT=$OUTDIR/${base}_seedvr2_${RES}p${SUFFIX}.mp4
+EXTRA=""; [ "$TILED" = 1 ] && EXTRA="$EXTRA --vae_encode_tiled --vae_decode_tiled"; [ "$COMPILE" = 1 ] && EXTRA="$EXTRA --compile_dit --compile_vae"
+
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate seedvr2
+export PYTHONNOUSERSITE=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+cd $ROOT/tools/ComfyUI-SeedVR2_VideoUpscaler
+
+echo "job $PBS_JOBID on $(hostname) start $(date)  IN=$IN RES=$RES BATCH=$BATCH TILED=$TILED COMPILE=$COMPILE"
+nvidia-smi --query-gpu=index,name,memory.total --format=csv,noheader
+# PBS passes GPU UUIDs; the CLI wants an integer index.
+DEV=0
+if [[ "${CUDA_VISIBLE_DEVICES:-}" == GPU-* ]]; then
+  DEV=$(nvidia-smi --query-gpu=index,uuid --format=csv,noheader | tr -d ' ' | awk -F, -v u="$CUDA_VISIBLE_DEVICES" '$2==u{print $1}')
+  unset CUDA_VISIBLE_DEVICES
+fi
+nvidia-smi dmon -s um -d 10 -o T > $ROOT/logs/gpu_dmon_${PBS_JOBID%%.*}.log 2>&1 &
+DMON=$!
+
+t0=$(date +%s)
+python inference_cli.py "$IN" \
+  --output "$OUT.noaudio.mp4" \
+  --model_dir $ROOT/models/SeedVR2 \
+  --dit_model "$MODEL" \
+  --resolution $RES \
+  --batch_size $BATCH \
+  --temporal_overlap 3 \
+  $EXTRA \
+  --attention_mode sdpa \
+  --video_backend ffmpeg \
+  --cuda_device $DEV
+rc=$?
+kill $DMON 2>/dev/null
+echo "seedvr2 rc=$rc elapsed $(( $(date +%s) - t0 )) s"
+if [ $rc -eq 0 ] && [ -s "$OUT.noaudio.mp4" ]; then
+  ffmpeg -v error -y -i "$OUT.noaudio.mp4" -i "$IN" -map 0:v:0 -map 1:a:0? -c:v copy -c:a copy -shortest "$OUT" && rm -f "$OUT.noaudio.mp4"
+  ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels -of compact "$OUT"
+  echo "OUTPUT $OUT"
+fi
+echo "end $(date)"

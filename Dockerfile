@@ -47,7 +47,7 @@ RUN useradd -m -u 1000 -s /bin/bash comfy \
 
 # ── Bundled custom nodes (synced into the PVC at every start) ───────────
 COPY --chown=comfy:comfy custom_nodes/ /opt/seed/custom_nodes/
-RUN pip install paramiko requests
+RUN pip install paramiko requests openai-whisper   # whisper: subtitle forced alignment
 
 COPY --chown=comfy:comfy entrypoint.sh /opt/entrypoint.sh
 COPY --chown=comfy:comfy fetch-model.sh /usr/local/bin/fetch-model

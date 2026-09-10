@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -q c30636g
+#PBS -W group_list=c30636
+#PBS -l select=1:ngpus=1
+#PBS -l walltime=12:00:00
+#PBS -N llm_serve
+#PBS -j oe
+#PBS -o /lustre1/work/c30636/test/minimax-h3/logs/
+# Screenplay/shot-plan LLM for the ComfyUI drama nodes, served by SGLang (OpenAI-compatible /v1)
+# on ONE H100 of c30636g so the K8s pod's GPU stays untouched.
+# Weights: hf download Qwen/Qwen2.5-14B-Instruct --local-dir models/Qwen2.5-14B-Instruct
+set -uo pipefail
+ROOT=${H3_ROOT:-/lustre1/work/c30636/test/minimax-h3}   # work dir: models/, outputs/, logs/, tools/
+MODEL=${MODEL:-$ROOT/models/Qwen2.5-14B-Instruct}
+PORT=${PORT:-30011}
+source ~/miniconda3/etc/profile.d/conda.sh; conda activate minimax-h3
+export PYTHONNOUSERSITE=1 HF_HUB_OFFLINE=1
+cd $ROOT
+if [[ "${CUDA_VISIBLE_DEVICES:-}" == GPU-* ]]; then
+  idx=$(nvidia-smi --query-gpu=index,uuid --format=csv,noheader | tr -d ' ' | awk -F, -v want="$CUDA_VISIBLE_DEVICES" 'BEGIN{n=split(want,w,",")} {u[$2]=$1} END{for(i=1;i<=n;i++){printf "%s%s",(i>1?",":""),u[w[i]]}}')
+  export CUDA_VISIBLE_DEVICES=$idx
+fi
+echo "$(hostname -I | awk '{print $1}'):$PORT" > logs/llm_endpoint.txt   # IP form: the K8s pod cannot resolve HPC hostnames
+echo "job $PBS_JOBID on $(hostname) serving $MODEL at $(cat logs/llm_endpoint.txt)"
+sglang serve --model-path "$MODEL" --host 0.0.0.0 --port $PORT --context-length 16384 --served-model-name Qwen2.5-14B-Instruct
+rm -f logs/llm_endpoint.txt

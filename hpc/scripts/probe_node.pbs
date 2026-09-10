@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -q c30636g
+#PBS -W group_list=c30636
+#PBS -l select=1:ngpus=1
+#PBS -l walltime=00:05:00
+#PBS -N h3_probe
+#PBS -j oe
+#PBS -o /lustre1/work/c30636/test/minimax-h3/logs/
+hostname; nvidia-smi; nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv
+nproc; free -g | head -2; df -h /tmp /dev/shm | cat
+ls /usr/local/cuda* -d 2>/dev/null; which python3 docker apptainer singularity 2>&1
