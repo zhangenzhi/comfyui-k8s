@@ -3,16 +3,16 @@
   "planner": {
    "class_type": "MiniMaxH3_EpisodePlanner",
    "inputs": {
-    "request": "第一集《深夜实验室，魔鬼导师撕了我的论文》：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓，男主先打压后护短，亲自在白板推导核心机理，带她进顶配仪器室，结尾他握住她拿移液枪的手。第 1 段镜头 1 必须从女主独自坐在超分辨显微镜前工作开始（该画面首帧已由定妆关键帧给定），报告被甩到台面后她再蹲下捡。全集 12 段、每段 12–15 秒，同一场景延续的段落 continue_from_previous 为 true。",
+    "request": "第一集《深夜实验室，魔鬼导师撕了我的论文》（90 秒，6 段）：反派师姐白天抢走超分辨仪机时，女主深夜偷用男主权限被抓；男主先冷酷打压，看到她笔记本上的推导后态度反转，当场护短并把目标定在 Nature 封面；结尾他握住她拿移液枪的手。至少换一次场景（例如白板处或顶配仪器室），换场景的段 continue_from_previous 为 false。",
     "episode": 1,
-    "clips": 12,
-    "backend": "local",
-    "model": "Qwen2.5-14B-Instruct",
-    "temperature": 0.5,
-    "seed": 3,
+    "clips": 6,
+    "backend": "openai",
+    "model": "Qwen2.5-72B-Instruct-AWQ",
+    "temperature": 0.6,
+    "seed": 11,
     "system_prompt_path": "",
     "ollama_url": "http://ollama:11434",
-    "llm_url": ""
+    "llm_url": "http://127.0.0.1:8001/v1"
    }
   },
   "script": {
@@ -33,7 +33,7 @@
     ],
     "clip_index": 1,
     "task": "auto",
-    "chain_mode": "always",
+    "chain_mode": "auto",
     "last_frame_given": false
    }
   },
@@ -50,22 +50,18 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 101,
+    "seed": 201,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip01",
+    "filename_prefix": "h3/ep01_90s/clip01",
     "timeout_s": 3600,
     "use_keyframes": [
      "b1",
      5
     ],
-    "endpoint": "",
-    "first_frame": [
-     "kf1",
-     0
-    ]
+    "endpoint": ""
    }
   },
   "b2": {
@@ -104,12 +100,12 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 102,
+    "seed": 202,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip02",
+    "filename_prefix": "h3/ep01_90s/clip02",
     "timeout_s": 3600,
     "use_keyframes": [
      "b2",
@@ -158,12 +154,12 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 103,
+    "seed": 203,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip03",
+    "filename_prefix": "h3/ep01_90s/clip03",
     "timeout_s": 3600,
     "use_keyframes": [
      "b3",
@@ -212,12 +208,12 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 104,
+    "seed": 204,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip04",
+    "filename_prefix": "h3/ep01_90s/clip04",
     "timeout_s": 3600,
     "use_keyframes": [
      "b4",
@@ -266,12 +262,12 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 105,
+    "seed": 205,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip05",
+    "filename_prefix": "h3/ep01_90s/clip05",
     "timeout_s": 3600,
     "use_keyframes": [
      "b5",
@@ -320,12 +316,12 @@
      1
     ],
     "aspect_ratio": "9:16",
-    "seed": 106,
+    "seed": 206,
     "steps": 50,
     "short_edge": 768,
     "flow_shift": 12.0,
     "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip06",
+    "filename_prefix": "h3/ep01_90s/clip06",
     "timeout_s": 3600,
     "use_keyframes": [
      "b6",
@@ -338,337 +334,14 @@
     ]
    }
   },
-  "b7": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 7,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf7": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g6",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g7": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b7",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b7",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 107,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip07",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b7",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf7",
-     0
-    ]
-   }
-  },
-  "b8": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 8,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf8": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g7",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g8": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b8",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b8",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 108,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip08",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b8",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf8",
-     0
-    ]
-   }
-  },
-  "b9": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 9,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf9": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g8",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g9": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b9",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b9",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 109,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip09",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b9",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf9",
-     0
-    ]
-   }
-  },
-  "b10": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 10,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf10": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g9",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g10": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b10",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b10",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 110,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip10",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b10",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf10",
-     0
-    ]
-   }
-  },
-  "b11": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 11,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf11": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g10",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g11": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b11",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b11",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 111,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip11",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b11",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf11",
-     0
-    ]
-   }
-  },
-  "b12": {
-   "class_type": "MiniMaxH3_ClipPromptBuilder",
-   "inputs": {
-    "shot_plan_json": [
-     "planner",
-     1
-    ],
-    "clip_index": 12,
-    "task": "auto",
-    "chain_mode": "auto",
-    "last_frame_given": false
-   }
-  },
-  "lf12": {
-   "class_type": "MiniMaxH3_LastFrame",
-   "inputs": {
-    "video_path": [
-     "g11",
-     1
-    ],
-    "which": "last"
-   }
-  },
-  "g12": {
-   "class_type": "MiniMaxH3_Generate",
-   "inputs": {
-    "prompt": [
-     "b12",
-     0
-    ],
-    "task": "auto",
-    "duration_seconds": [
-     "b12",
-     1
-    ],
-    "aspect_ratio": "9:16",
-    "seed": 112,
-    "steps": 50,
-    "short_edge": 768,
-    "flow_shift": 12.0,
-    "audio_flow_shift": 3.0,
-    "filename_prefix": "h3/ep01_3min/clip12",
-    "timeout_s": 3600,
-    "use_keyframes": [
-     "b12",
-     5
-    ],
-    "endpoint": "",
-    "first_frame": [
-     "lf12",
-     0
-    ]
-   }
-  },
   "concat768": {
    "class_type": "MiniMaxH3_VideoConcat",
    "inputs": {
-    "filename_prefix": "h3/ep01_3min/episode01_768p",
+    "filename_prefix": "h3/ep01_90s/episode01_768p",
     "burn_subtitles": true,
     "font_size": 44,
-    "crossfade_s": 0.0,
+    "crossfade_s": 0.25,
+    "trim_head_frames": 3,
     "font_file": "/workspace/data/fonts/NotoSansCJK-Regular.ttc",
     "clip_1": [
      "g1",
@@ -717,54 +390,6 @@
     "srt_6": [
      "b6",
      2
-    ],
-    "clip_7": [
-     "g7",
-     1
-    ],
-    "srt_7": [
-     "b7",
-     2
-    ],
-    "clip_8": [
-     "g8",
-     1
-    ],
-    "srt_8": [
-     "b8",
-     2
-    ],
-    "clip_9": [
-     "g9",
-     1
-    ],
-    "srt_9": [
-     "b9",
-     2
-    ],
-    "clip_10": [
-     "g10",
-     1
-    ],
-    "srt_10": [
-     "b10",
-     2
-    ],
-    "clip_11": [
-     "g11",
-     1
-    ],
-    "srt_11": [
-     "b11",
-     2
-    ],
-    "clip_12": [
-     "g12",
-     1
-    ],
-    "srt_12": [
-     "b12",
-     2
     ]
    }
   },
@@ -774,7 +399,7 @@
     "resolution": 1440,
     "batch_size": 33,
     "timeout_s": 10800,
-    "filename_prefix": "h3/ep01_3min/2k/clip",
+    "filename_prefix": "h3/ep01_90s/2k/clip",
     "clip_1": [
      "g1",
      1
@@ -798,40 +423,17 @@
     "clip_6": [
      "g6",
      1
-    ],
-    "clip_7": [
-     "g7",
-     1
-    ],
-    "clip_8": [
-     "g8",
-     1
-    ],
-    "clip_9": [
-     "g9",
-     1
-    ],
-    "clip_10": [
-     "g10",
-     1
-    ],
-    "clip_11": [
-     "g11",
-     1
-    ],
-    "clip_12": [
-     "g12",
-     1
     ]
    }
   },
   "concat2k": {
    "class_type": "MiniMaxH3_VideoConcat",
    "inputs": {
-    "filename_prefix": "h3/ep01_3min/episode01_2k",
+    "filename_prefix": "h3/ep01_90s/episode01_2k",
     "burn_subtitles": true,
     "font_size": 80,
-    "crossfade_s": 0.0,
+    "crossfade_s": 0.25,
+    "trim_head_frames": 3,
     "font_file": "/workspace/data/fonts/NotoSansCJK-Regular.ttc",
     "clip_1": [
      "up",
@@ -880,61 +482,7 @@
     "srt_6": [
      "b6",
      2
-    ],
-    "clip_7": [
-     "up",
-     6
-    ],
-    "srt_7": [
-     "b7",
-     2
-    ],
-    "clip_8": [
-     "up",
-     7
-    ],
-    "srt_8": [
-     "b8",
-     2
-    ],
-    "clip_9": [
-     "up",
-     8
-    ],
-    "srt_9": [
-     "b9",
-     2
-    ],
-    "clip_10": [
-     "up",
-     9
-    ],
-    "srt_10": [
-     "b10",
-     2
-    ],
-    "clip_11": [
-     "up",
-     10
-    ],
-    "srt_11": [
-     "b11",
-     2
-    ],
-    "clip_12": [
-     "up",
-     11
-    ],
-    "srt_12": [
-     "b12",
-     2
     ]
-   }
-  },
-  "kf1": {
-   "class_type": "LoadImage",
-   "inputs": {
-    "image": "keyframes/ep01_clip1.png"
    }
   }
  }
