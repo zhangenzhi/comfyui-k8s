@@ -61,9 +61,9 @@ spec:
             - name: COMFYUI_PORT
               value: "8188"
             # Extra ComfyUI CLI flags, e.g. "--preview-method auto --highvram"
-            # --reserve-vram 30: the drama LLM (Qwen2.5-14B, ~29 GB) stays resident on this GPU
+            # --reserve-vram 45: the vLLM sidecar (Qwen2.5-72B-AWQ, ~44 GB at 0.55) shares this GPU
             - name: COMFYUI_ARGS
-              value: "--preview-method auto --reserve-vram 30"
+              value: "--preview-method auto --reserve-vram 45"
             # 1 = git pull ComfyUI at every start (like ffformer entrypoint). 0 = pinned image code.
             - name: COMFYUI_AUTO_UPDATE
               value: "0"
@@ -83,9 +83,17 @@ spec:
               value: /secrets/hpc/key
             - name: OLLAMA_URL
               value: http://ollama:11434
-            # Screenplay LLM: resident on this pod's H100 (research cloud), weights on the PVC
+            # Screenplay LLM: vLLM sidecar on this pod's H100 (started by the entrypoint), OpenAI-compatible
+            - name: H3_LLM_SIDECAR
+              value: "1"
             - name: H3_LLM_BACKEND
-              value: local
+              value: openai
+            - name: H3_LLM_URL
+              value: http://127.0.0.1:8001/v1
+            - name: H3_LLM_MODEL
+              value: Qwen2.5-72B-Instruct-AWQ
+            - name: H3_LLM_GPU_FRAC
+              value: "0.55"
             - name: H3_LOCAL_LLM
               value: Qwen2.5-14B-Instruct
             - name: HF_TOKEN            # for fetch-model on gated HF repos (optional)

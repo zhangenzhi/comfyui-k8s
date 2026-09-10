@@ -50,6 +50,21 @@ if [ "${COMFYUI_AUTO_UPDATE:-0}" = "1" ]; then
     fi
 fi
 
+# ── Optional LLM sidecar (vLLM in its own venv on the PVC) for the drama planner ──
+#    H3_LLM_SIDECAR=1  H3_LLM_MODEL=<dir under /workspace/data/llm>  H3_LLM_GPU_FRAC=0.55
+if [ "${H3_LLM_SIDECAR:-0}" = "1" ] && [ -x "${BASE}/venvs/vllm/bin/vllm" ]; then
+    LLM_DIR="${H3_LLM_DIR:-${BASE}/llm}/${H3_LLM_MODEL:-Qwen2.5-72B-Instruct-AWQ}"
+    LLM_PORT="${H3_LLM_PORT:-8001}"
+    echo "[entrypoint] starting vLLM sidecar: ${LLM_DIR} on 127.0.0.1:${LLM_PORT}"
+    nohup "${BASE}/venvs/vllm/bin/vllm" serve "${LLM_DIR}" \
+        --served-model-name "${H3_LLM_MODEL:-Qwen2.5-72B-Instruct-AWQ}" \
+        --host 127.0.0.1 --port "${LLM_PORT}" \
+        --gpu-memory-utilization "${H3_LLM_GPU_FRAC:-0.55}" \
+        --max-model-len "${H3_LLM_CTX:-24576}" --max-num-seqs 4 \
+        --quantization awq_marlin --dtype float16 \
+        > "${BASE}/venvs/vllm_serve.log" 2>&1 &
+fi
+
 cd /opt/ComfyUI
 echo "[entrypoint] Starting ComfyUI on 0.0.0.0:${PORT} ${COMFYUI_ARGS:-}"
 # shellcheck disable=SC2086
