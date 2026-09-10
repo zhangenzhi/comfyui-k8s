@@ -51,6 +51,12 @@ spec:
           # Debug: replace with sleep to poke around
           #   command: ["sleep"]
           #   args: ["infinity"]
+          # Kill the vLLM sidecar before SIGTERM: a sidecar mid-load (uninterruptible I/O on the
+          # PVC) can keep the old container alive and block the Recreate rollout.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "pkill -9 -f 'bin/vllm serve' || true"]
           ports:
             - name: http
               containerPort: 8188
