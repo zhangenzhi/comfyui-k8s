@@ -136,8 +136,11 @@ def ensure_sidecar():
            "--quantization", os.environ.get("H3_LLM_QUANT", "awq"), "--dtype", "float16"]
     env = dict(os.environ)
     env.pop("PYTHONUSERBASE", None); env.pop("PIP_USER", None); env.pop("PYTHONPATH", None)
-    env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-    env.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
+    # ComfyUI sets PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync in os.environ; the sidecar must
+    # NOT inherit it (no expandable segments -> ~18 GB fragmentation -> OOM on the 72B).
+    env["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    env["VLLM_USE_FLASHINFER_SAMPLER"] = "0"
+    env.pop("CUDA_MODULE_LOADING", None)
     subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
     print(f"[MiniMax-H3] LLM sidecar starting: {model} on 127.0.0.1:{port} (log: venvs/vllm_serve.log)")
 
